@@ -25,6 +25,16 @@ func (f *fieldAccess) Label() string {
 	return strconv.Itoa(f.Index)
 }
 
+func (f *fieldAccess) Key() string {
+	if f.Name != "" {
+		return f.Name
+	}
+	if f.MapKey != nil {
+		return fmt.Sprintf("%v", f.MapKey)
+	}
+	return strconv.Itoa(f.Index)
+}
+
 func (f *fieldAccess) Value() any {
 	rv := reflect.ValueOf(f.Owner)
 	if rv.Kind() == reflect.Interface || rv.Kind() == reflect.Pointer {

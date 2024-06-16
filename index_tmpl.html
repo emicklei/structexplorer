@@ -5,9 +5,9 @@
         <div class="typename">{{.Type}}</div>
         <select id="{{.SelectID}}" multiple size="{{.SelectSize}}">
             {{ range .Fields }}
-                {{ $fv := fieldvalue . }}
+                {{ $fv := fieldValueString . }}
                 {{ if includeField . $fv }}
-                    <option value="{{.Name}}">{{.Name}}:{{ $fv }}</option>
+                    <option value="{{fieldKey .}}">{{fieldLabel .}}:{{ $fv }}</option>
                 {{ end }}
             {{ end }}
         </select>

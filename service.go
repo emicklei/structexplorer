@@ -16,7 +16,13 @@ var indexHTML string
 func (s *service) init() {
 	tmpl := template.New("index")
 	tmpl = tmpl.Funcs(template.FuncMap{
-		"fieldvalue": func(f fieldEntry) string {
+		"fieldLabel": func(f fieldEntry) string {
+			return f.Label()
+		},
+		"fieldKey": func(f fieldEntry) string {
+			return f.Key()
+		},
+		"fieldValueString": func(f fieldEntry) string {
 			return printString(f.Value())
 		},
 		"includeField": func(f fieldEntry, s string) bool {
