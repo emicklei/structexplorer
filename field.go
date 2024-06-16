@@ -32,7 +32,13 @@ func (f *fieldAccess) Value() any {
 			panic(err)
 		}
 		rf = rv.Index(index)
-	} else {
+	}
+	if rv.Type().Kind() == reflect.Map {
+		// name is key
+		rf = rv.MapIndex(reflect.ValueOf(f.Name))
+	}
+	if rv.Type().Kind() == reflect.Struct {
+		// name is field
 		rf = rv.FieldByName(f.Name)
 	}
 	if !rf.IsValid() || rf.IsZero() {
@@ -74,6 +80,15 @@ func newFields(v any) (list []fieldAccess) {
 		}
 		return
 	}
+	if rt.Kind() == reflect.Map {
+		for _, key := range rv.MapKeys() {
+			list = append(list, fieldAccess{
+				Owner: v,
+				Name:  key.String(),
+			})
+		}
+		return
+	}
 	slog.Warn("no fields for non struct", "value", v)
 	return
 }
@@ -100,7 +115,7 @@ func printString(v any) string {
 	}
 	switch v.(type) {
 	case string:
-		return v.(string)
+		return strconv.Quote(v.(string))
 	case int:
 		return strconv.Itoa(v.(int))
 	case bool:
@@ -124,6 +139,9 @@ func canExplore(v any) bool {
 		return true
 	}
 	if rt.Kind() == reflect.Slice {
+		return true
+	}
+	if rt.Kind() == reflect.Map {
 		return true
 	}
 	return false

@@ -13,29 +13,45 @@ import (
 //go:embed index_tmpl.html
 var indexHTML string
 
-var indexTemplate *template.Template
-
-func init() {
+func (s *service) init() {
 	tmpl := template.New("index")
 	tmpl = tmpl.Funcs(template.FuncMap{
-		"fieldvalue": func(f fieldAccess) string {
+		"fieldvalue": func(f fieldEntry) string {
 			return printString(f.Value())
+		},
+		"includeField": func(f fieldEntry, s string) bool {
+			return s != "nil" || f.hideNil
 		},
 	})
 	tmpl, err := tmpl.Parse(indexHTML)
 	if err != nil {
-		fmt.Println("failed to parse template", "err", err)
+		slog.Error("failed to parse template", "err", err)
 	}
-	indexTemplate = tmpl
+	s.indexTemplate = tmpl
 }
 
 type Options struct {
-	SkipNils bool
 	HTTPPort int
+	ServeMux *http.ServeMux
+}
+
+func (o *Options) httpPort() int {
+	if o.HTTPPort == 0 {
+		return 5656
+	}
+	return o.HTTPPort
+}
+
+func (o *Options) serveMux() *http.ServeMux {
+	if o.ServeMux == nil {
+		return http.DefaultServeMux
+	}
+	return o.ServeMux
 }
 
 type service struct {
-	explorer *explorer
+	explorer      *explorer
+	indexTemplate *template.Template
 }
 
 func NewService(labelValuePairs ...any) *service {
@@ -43,19 +59,23 @@ func NewService(labelValuePairs ...any) *service {
 }
 
 func (s *service) Start(opts ...Options) {
-	port := 5656
 	if len(opts) > 0 {
-		port = opts[0].HTTPPort
+		s.explorer.options = &opts[0]
 	}
+	s.init()
+	port := s.explorer.options.httpPort()
+	serveMux := s.explorer.options.serveMux()
 	slog.Info(fmt.Sprintf("starting go struct explorer at http://localhost:%d on %v", port, s.explorer.rootKeys()))
-	http.DefaultServeMux.HandleFunc("/", s.serveIndex)
-	http.DefaultServeMux.HandleFunc("/instructions", s.serveInstructions)
-	http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+	serveMux.HandleFunc("/", s.serveIndex)
+	serveMux.HandleFunc("/instructions", s.serveInstructions)
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil); err != nil {
+		slog.Error("failed to start server", "err", err)
+	}
 }
 
 func (s *service) serveIndex(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "text/html")
-	if err := indexTemplate.Execute(w, s.explorer.buildIndexData()); err != nil {
+	if err := s.indexTemplate.Execute(w, s.explorer.buildIndexData()); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -65,7 +85,7 @@ type uiInstruction struct {
 	Row        int      `json:"row"`
 	Column     int      `json:"column"`
 	Selections []string `json:"selections"`
-	Direction  string   `json:"direction"`
+	Action     string   `json:"action"`
 }
 
 func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
@@ -78,19 +98,28 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	slog.Debug("instruction", "row", cmd.Row, "column", cmd.Column, "selections", cmd.Selections, "direction", cmd.Direction)
+	slog.Debug("instruction", "row", cmd.Row, "column", cmd.Column, "selections", cmd.Selections, "action", cmd.Action)
 
 	fromAccess := s.explorer.objectAt(cmd.Row, cmd.Column)
 	toRow := cmd.Row
 	toColumn := cmd.Column
-	switch cmd.Direction {
+	switch cmd.Action {
 	case "down":
 		toRow++
 	case "right":
 		toColumn++
+	case "remove":
+		s.explorer.removeObjectAt(cmd.Row, cmd.Column)
+		return
+	case "toggleNils":
+		s.explorer.updateObjectAt(cmd.Row, cmd.Column, func(access objectAccess) objectAccess {
+			access.hideNils = !access.hideNils
+			return access
+		})
+		return
 	default:
-		slog.Warn("invalid direction", "direction", cmd.Direction)
-		http.Error(w, "invalid direction", http.StatusBadRequest)
+		slog.Warn("invalid direction", "action", cmd.Action)
+		http.Error(w, "invalid action", http.StatusBadRequest)
 		return
 	}
 	for _, each := range cmd.Selections {

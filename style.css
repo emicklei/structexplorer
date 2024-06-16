@@ -1,0 +1,32 @@
+select {            
+    overflow-y: hidden;
+    font-family: monospace, monospace;
+    font-size: small;
+    height: 100%;
+}
+option {
+    margin: 2px;
+}
+body {
+    margin: 4;
+    font-family: monospace, monospace;            
+}
+td {
+    vertical-align: top;
+}
+.col {
+    float: left;
+}
+.values {
+    text-align: left;
+}
+.columns {
+    overflow: hidden;
+}
+.path {
+    font-size: small;
+    font-style: italic;
+}
+.typename {
+    font-size: small;          
+} 

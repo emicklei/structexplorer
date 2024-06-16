@@ -10,6 +10,7 @@ type objectAccess struct {
 	path     []string
 	label    string
 	typeName string
+	hideNils bool
 }
 
 func (o objectAccess) Value() any {
@@ -22,7 +23,7 @@ func (o objectAccess) isEmpty() bool {
 
 type explorer struct {
 	accessMap map[int]map[int]objectAccess
-	options   Options
+	options   *Options // some properties can be modified by user
 }
 
 func (e *explorer) maxRow(col int) int {
@@ -48,7 +49,7 @@ func (e *explorer) rootKeys() (list []string) {
 func newExplorerOnAll(labelValuePairs ...any) *explorer {
 	s := &explorer{
 		accessMap: map[int]map[int]objectAccess{},
-		options:   Options{},
+		options:   new(Options),
 	}
 	for i := 0; i < len(labelValuePairs); i += 2 {
 		label, ok := labelValuePairs[i].(string)
@@ -79,6 +80,20 @@ func (e *explorer) objectAt(row, col int) objectAccess {
 	return r[col]
 }
 
+func (e *explorer) removeObjectAt(row, col int) {
+	r, ok := e.accessMap[row]
+	if !ok {
+		return
+	}
+	delete(r, col)
+}
+
+func (e *explorer) updateObjectAt(row, col int, updater func(access objectAccess) objectAccess) {
+	old := e.objectAt(row, col)
+	e.removeObjectAt(row, col)
+	e.objectAtPut(row, col, updater(old))
+}
+
 func (e *explorer) objectAtPut(row, col int, access objectAccess) {
 	r, ok := e.accessMap[row]
 	if !ok {
@@ -95,7 +110,7 @@ func (e *explorer) objectAtPut(row, col int, access objectAccess) {
 }
 
 func (e *explorer) buildIndexData() indexData {
-	b := new(indexDataBuilder)
+	b := newIndexDataBuilder()
 	for row, each := range e.accessMap {
 		for col, access := range each {
 			b.build(row, col, access, access.Value())

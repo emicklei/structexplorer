@@ -1,8 +1,21 @@
 package structexplorer
 
+import (
+	_ "embed"
+	"html/template"
+)
+
+//go:embed script.js
+var scriptJS string
+
+//go:embed style.css
+var styleCSS string
+
 type (
 	indexData struct {
-		Rows []tableRow
+		Rows   []tableRow
+		Script template.JS
+		Style  template.CSS
 	}
 	tableRow struct {
 		Cells []fieldList
@@ -14,8 +27,12 @@ type (
 		Column     int
 		Type       string
 		Access     string
-		Fields     []fieldAccess
+		Fields     []fieldEntry
 		SelectSize int
 		SelectID   string
+	}
+	fieldEntry struct {
+		fieldAccess
+		hideNil bool
 	}
 )

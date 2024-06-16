@@ -1,16 +1,21 @@
 {{define "struct"}}
 <div class="col">
     {{ if ne .Type "" }}
-        <div title="{{.Path}}">{{.Label}}</p>
-        <div>{{.Type}}</div>
+        <div class="path" title="{{.Path}}">{{.Label}}</div>
+        <div class="typename">{{.Type}}</div>
         <select id="{{.SelectID}}" multiple size="{{.SelectSize}}">
             {{ range .Fields }}
-            <option value="{{.Name}}">{{.Name}}:{{ fieldvalue .}}</option>
+                {{ $fv := fieldvalue . }}
+                {{ if includeField . $fv }}
+                    <option value="{{.Name}}">{{.Name}}:{{ $fv }}</option>
+                {{ end }}
             {{ end }}
         </select>
         <div style="display: block;margin-top: 4px;">
             <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'down');">&darr;&darr;</button> 
-            <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'right');">&rarr;&rarr;</button>            
+            <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'right');">&rarr;&rarr;</button>
+            <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'toggleNils');">nil</button>
+            <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'remove');">X</button>            
         </div>
     {{ end }}
 </div>
@@ -19,74 +24,8 @@
 <html>
 
 <head>
-    <script>
-        function explore(row,column,selectNode,direction) {
-            if (selectNode == null) {
-                console.log(row,column,"selectNode is null");
-                return;
-            }
-            console.log(row,column,selectNode.value,direction);
-            const xhr = new XMLHttpRequest();
-            xhr.open("POST", "/instructions");
-            xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8")
-            xhr.send(JSON.stringify({
-                row: row,
-                column: column,
-                direction: direction,
-                selections: getSelectValues(selectNode)
-            }));
-            xhr.onload = function() {
-                window.location.reload();
-            }
-        }
-        // Return an array of the selected option values in the control.
-        // Select is an HTML select element.
-        function getSelectValues(select) {
-        var result = [];
-        var options = select && select.options;
-        var opt;
-
-        for (var i=0, iLen=options.length; i<iLen; i++) {
-            opt = options[i];
-
-            if (opt.selected) {
-            result.push(opt.value || opt.text);
-            }
-        }
-        return result;
-        }
-    </script>
-    <style>
-        select {
-            font-family: 'mono';
-            overflow-y: hidden;
-        }
-
-        option {
-            margin: 2px;
-        }
-
-        body {
-            margin: 4;
-            color: #000;
-        }
-
-        td {
-            vertical-align: top;
-        }
-
-        .col {
-            float: left;
-        }
-
-        .values {
-            text-align: left;
-        }
-
-        .columns {
-            overflow: hidden;
-        }
-    </style>
+    <script>{{.Script}}</script>
+    <style>{{.Style}}</style>
 </head>
 
 <body>
