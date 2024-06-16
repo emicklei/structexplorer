@@ -76,6 +76,7 @@ func (s *service) Start(opts ...Options) {
 func (s *service) serveIndex(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "text/html")
 	if err := s.indexTemplate.Execute(w, s.explorer.buildIndexData()); err != nil {
+		slog.Error("failed to execute template", "err", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

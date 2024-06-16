@@ -4,5 +4,11 @@ import "testing"
 
 func TestExplorer(t *testing.T) {
 	x := newExplorerOnAll("indexData", indexData{})
-	t.Log(x.buildIndexData())
+	d := x.buildIndexData()
+	if d.Script == "" {
+		t.Fail()
+	}
+	if d.Style == "" {
+		t.Fail()
+	}
 }

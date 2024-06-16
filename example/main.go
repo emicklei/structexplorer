@@ -11,11 +11,13 @@ type hidden struct {
 	secret   *time.Time
 	timeFunc func() time.Time
 	null     *int
+	m        map[string]int
 }
 
 func main() {
 	n := time.Now()
-	h := &hidden{private: true, secret: &n, timeFunc: time.Now}
+	h := &hidden{private: true, secret: &n, timeFunc: time.Now,
+		null: nil, m: map[string]int{"answer": 42}}
 
 	structexplorer.NewService("hidden", h).Start()
 }

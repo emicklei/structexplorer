@@ -15,12 +15,13 @@ type object struct {
 	PI   *int
 	null *object
 	sl   []string
+	m    map[string]int
 }
 
 func TestFieldValue(t *testing.T) {
 	var i int = 24
 	o := object{
-		i: i, pi: &i, I: i, PI: &i, sl: []string{"a"},
+		i: i, pi: &i, I: i, PI: &i, sl: []string{"a"}, m: map[string]int{"a": 1},
 	}
 	t.Log((&fieldAccess{Owner: o, Name: "sl"}).Value())
 	t.Log((&fieldAccess{Owner: &o, Name: "i"}).Value())
@@ -28,12 +29,23 @@ func TestFieldValue(t *testing.T) {
 	t.Log((&fieldAccess{Owner: &o, Name: "I"}).Value())
 	t.Log((&fieldAccess{Owner: &o, Name: "PI"}).Value())
 	t.Log((&fieldAccess{Owner: o, Name: "null"}).Value())
+	t.Log((&fieldAccess{Owner: o, Name: "m"}).Value())
+}
+
+func TestFieldMapAccess(t *testing.T) {
+	f := fieldAccess{Owner: map[string]int{"a": 1}, Name: "a"}
+	t.Log(f.Value())
+}
+func TestFieldMapAccessPointer(t *testing.T) {
+	var a int = 1
+	f := fieldAccess{Owner: map[string]*int{"a": &a}, Name: "a"}
+	t.Log(f.Value())
 }
 
 func TestNewFields(t *testing.T) {
 	o := object{}
 	nf := newFields(o)
-	if got, want := len(nf), 6; got != want {
+	if got, want := len(nf), 7; got != want {
 		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
 	}
 	if got, want := nf[0].Name, "i"; got != want {

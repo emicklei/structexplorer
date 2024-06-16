@@ -36,6 +36,7 @@ func (f *fieldAccess) Value() any {
 	if rv.Type().Kind() == reflect.Map {
 		// name is key
 		rf = rv.MapIndex(reflect.ValueOf(f.Name))
+		return rf.Interface()
 	}
 	if rv.Type().Kind() == reflect.Struct {
 		// name is field
@@ -116,13 +117,18 @@ func printString(v any) string {
 	switch v.(type) {
 	case string:
 		return strconv.Quote(v.(string))
-	case int:
-		return strconv.Itoa(v.(int))
+	case int, int64, int32, int16, int8, uint, uint64, uint32, uint16, uint8:
+		return fmt.Sprintf("%d", v)
 	case bool:
 		return strconv.FormatBool(v.(bool))
-	case float64:
-		return strconv.FormatFloat(v.(float64), 'f', -1, 64)
+	case float64, float32:
+		return fmt.Sprintf("%f", v)
 	default:
+		rt := reflect.TypeOf(v)
+		if rt.Kind() == reflect.Map || rt.Kind() == reflect.Slice || rt.Kind() == reflect.Array {
+			rv := reflect.ValueOf(v)
+			return fmt.Sprintf("%T (%d)", v, rv.Len())
+		}
 		return fmt.Sprintf("%T", v)
 	}
 }
