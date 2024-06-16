@@ -50,6 +50,10 @@ func TestFieldMapWithReflects(t *testing.T) {
 	m[reflect.ValueOf(1)] = reflect.ValueOf(2)
 	f := fieldAccess{Owner: m, MapKey: reflect.ValueOf(1)}
 	t.Log(f.Value())
+	t.Log(f.Key())
+	// TODO
+	// val := valueAtAccessPath(m, []string{f.Key()})
+	// t.Log(val)
 }
 
 func TestNewFields(t *testing.T) {
