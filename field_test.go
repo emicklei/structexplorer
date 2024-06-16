@@ -1,6 +1,9 @@
 package structexplorer
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func TestValueAt(t *testing.T) {
 	i := indexData{Rows: []tableRow{{}}}
@@ -33,12 +36,19 @@ func TestFieldValue(t *testing.T) {
 }
 
 func TestFieldMapAccess(t *testing.T) {
-	f := fieldAccess{Owner: map[string]int{"a": 1}, Name: "a"}
+	f := fieldAccess{Owner: map[string]int{"a": 1}, MapKey: "a"}
 	t.Log(f.Value())
 }
 func TestFieldMapAccessPointer(t *testing.T) {
 	var a int = 1
-	f := fieldAccess{Owner: map[string]*int{"a": &a}, Name: "a"}
+	f := fieldAccess{Owner: map[string]*int{"a": &a}, MapKey: "a"}
+	t.Log(f.Value())
+}
+
+func TestFieldMapWithReflects(t *testing.T) {
+	m := map[reflect.Value]reflect.Value{}
+	m[reflect.ValueOf(1)] = reflect.ValueOf(2)
+	f := fieldAccess{Owner: m, MapKey: reflect.ValueOf(1)}
 	t.Log(f.Value())
 }
 

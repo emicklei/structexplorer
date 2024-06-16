@@ -9,8 +9,20 @@ import (
 )
 
 type fieldAccess struct {
-	Owner any
-	Name  string
+	Owner  any
+	Name   string // for struct
+	Index  int    // for slice and array
+	MapKey any    // for maps
+}
+
+func (f *fieldAccess) Label() string {
+	if f.Name != "" {
+		return f.Name
+	}
+	if f.MapKey != nil {
+		return fmt.Sprintf("%v", f.MapKey)
+	}
+	return strconv.Itoa(f.Index)
 }
 
 func (f *fieldAccess) Value() any {
@@ -26,16 +38,11 @@ func (f *fieldAccess) Value() any {
 	}
 	var rf reflect.Value
 	if rv.Type().Kind() == reflect.Slice {
-		// name is index
-		index, err := strconv.Atoi(f.Name)
-		if err != nil {
-			panic(err)
-		}
-		rf = rv.Index(index)
+		rf = rv.Index(f.Index)
 	}
 	if rv.Type().Kind() == reflect.Map {
 		// name is key
-		rf = rv.MapIndex(reflect.ValueOf(f.Name))
+		rf = rv.MapIndex(reflect.ValueOf(f.MapKey))
 		return rf.Interface()
 	}
 	if rv.Type().Kind() == reflect.Struct {
@@ -76,7 +83,7 @@ func newFields(v any) (list []fieldAccess) {
 		for i := 0; i < rv.Len(); i++ {
 			list = append(list, fieldAccess{
 				Owner: v,
-				Name:  strconv.Itoa(i),
+				Index: i,
 			})
 		}
 		return
@@ -84,8 +91,8 @@ func newFields(v any) (list []fieldAccess) {
 	if rt.Kind() == reflect.Map {
 		for _, key := range rv.MapKeys() {
 			list = append(list, fieldAccess{
-				Owner: v,
-				Name:  key.String(),
+				Owner:  v,
+				MapKey: key.Interface(),
 			})
 		}
 		return
