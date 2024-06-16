@@ -6,33 +6,24 @@ import (
 	"reflect"
 	"strconv"
 	"unsafe"
+
+	"github.com/mitchellh/hashstructure/v2"
 )
 
 type fieldAccess struct {
-	Owner  any
-	Name   string // for struct
-	Index  int    // for slice and array
-	MapKey any    // for maps
+	Owner any
+	// Name is the name of field in struct
+	// or the string index in slice
+	// or then key hash in the map
+	Name string // for struct
 }
 
 func (f *fieldAccess) Label() string {
-	if f.Name != "" {
-		return f.Name
-	}
-	if f.MapKey != nil {
-		return fmt.Sprintf("%v", f.MapKey)
-	}
-	return strconv.Itoa(f.Index)
+	return f.Name
 }
 
 func (f *fieldAccess) Key() string {
-	if f.Name != "" {
-		return f.Name
-	}
-	if f.MapKey != nil {
-		return fmt.Sprintf("%v", f.MapKey)
-	}
-	return strconv.Itoa(f.Index)
+	return f.Name
 }
 
 func (f *fieldAccess) Value() any {
@@ -48,12 +39,22 @@ func (f *fieldAccess) Value() any {
 	}
 	var rf reflect.Value
 	if rv.Type().Kind() == reflect.Slice {
-		rf = rv.Index(f.Index)
+		i, _ := strconv.Atoi(f.Name)
+		rf = rv.Index(i)
 	}
 	if rv.Type().Kind() == reflect.Map {
-		// name is key
-		rf = rv.MapIndex(reflect.ValueOf(f.MapKey))
-		return rf.Interface()
+		// shortcut for string and int keys
+		keyType := rv.Type().Key()
+		if keyType.Kind() == reflect.String {
+			return rv.MapIndex(reflect.ValueOf(f.Name)).Interface()
+		}
+		if keyType.Kind() == reflect.Int {
+			i, _ := strconv.Atoi(f.Name)
+			return rv.MapIndex(reflect.ValueOf(i)).Interface()
+		}
+		// fallback: name is hash of key
+		key := stringToReflectMapKey(f.Name, rv)
+		return rv.MapIndex(key).Interface()
 	}
 	if rv.Type().Kind() == reflect.Struct {
 		// name is field
@@ -93,7 +94,7 @@ func newFields(v any) (list []fieldAccess) {
 		for i := 0; i < rv.Len(); i++ {
 			list = append(list, fieldAccess{
 				Owner: v,
-				Index: i,
+				Name:  strconv.Itoa(i),
 			})
 		}
 		return
@@ -101,8 +102,8 @@ func newFields(v any) (list []fieldAccess) {
 	if rt.Kind() == reflect.Map {
 		for _, key := range rv.MapKeys() {
 			list = append(list, fieldAccess{
-				Owner:  v,
-				MapKey: key.Interface(),
+				Owner: v,
+				Name:  reflectMapKeyToString(key),
 			})
 		}
 		return
@@ -168,4 +169,42 @@ func canExplore(v any) bool {
 		return true
 	}
 	return false
+}
+
+func mapKeyToString(key any) string {
+	// fallback to hash of key
+	hash, _ := hashstructure.Hash(key, hashstructure.FormatV2, nil)
+	return strconv.FormatUint(hash, 16)
+}
+func stringToMapKey(hash string, m reflect.Value) any {
+	for _, each := range m.MapKeys() {
+		actualKey := each.Interface()
+		cmp := mapKeyToString(actualKey)
+		if cmp == hash {
+			return actualKey
+		}
+	}
+	return nil
+}
+
+func reflectMapKeyToString(key reflect.Value) string {
+	if key.Kind() == reflect.String {
+		return key.String()
+	}
+	if key.Kind() == reflect.Int {
+		return strconv.Itoa(int(key.Int()))
+	}
+	// fallback to hash of key
+	hash, _ := hashstructure.Hash(key, hashstructure.FormatV2, nil)
+	return strconv.FormatUint(hash, 16)
+}
+func stringToReflectMapKey(hash string, m reflect.Value) reflect.Value {
+	for _, each := range m.MapKeys() {
+		cmp := reflectMapKeyToString(each)
+		if cmp == hash {
+			return each
+		}
+	}
+	// not found is actually a bug
+	return reflect.ValueOf(nil)
 }

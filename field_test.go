@@ -36,24 +36,42 @@ func TestFieldValue(t *testing.T) {
 }
 
 func TestFieldMapAccess(t *testing.T) {
-	f := fieldAccess{Owner: map[string]int{"a": 1}, MapKey: "a"}
+	f := fieldAccess{Owner: map[string]int{"a": 1}, Name: "a"}
 	t.Log(f.Value())
 }
 func TestFieldMapAccessPointer(t *testing.T) {
 	var a int = 1
-	f := fieldAccess{Owner: map[string]*int{"a": &a}, MapKey: "a"}
+	f := fieldAccess{Owner: map[string]*int{"a": &a}, Name: "a"}
 	t.Log(f.Value())
 }
 
 func TestFieldMapWithReflects(t *testing.T) {
 	m := map[reflect.Value]reflect.Value{}
 	m[reflect.ValueOf(1)] = reflect.ValueOf(2)
-	f := fieldAccess{Owner: m, MapKey: reflect.ValueOf(1)}
+	ks := reflectMapKeyToString(reflect.ValueOf(reflect.ValueOf(1)))
+	f := fieldAccess{Owner: m, Name: ks}
 	t.Log(f.Value())
 	t.Log(f.Key())
 	// TODO
-	// val := valueAtAccessPath(m, []string{f.Key()})
-	// t.Log(val)
+	val := valueAtAccessPath(m, []string{f.Name})
+	t.Log(val)
+}
+
+func TestMapKeyAndBack(t *testing.T) {
+	m := map[string]int{"a": 1}
+	ks := mapKeyToString("a")
+	if got, want := ks, "af63bd4c8601b7be"; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+	rm := reflect.ValueOf(m)
+	k := stringToMapKey(ks, rm)
+	if got, want := k, any("a"); got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+	rv := rm.MapIndex(reflect.ValueOf(k))
+	if got, want := rv.Int(), int64(1); got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
 }
 
 func TestNewFields(t *testing.T) {
