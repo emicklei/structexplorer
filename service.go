@@ -17,10 +17,10 @@ func (s *service) init() {
 	tmpl := template.New("index")
 	tmpl = tmpl.Funcs(template.FuncMap{
 		"fieldLabel": func(f fieldEntry) string {
-			return f.Label()
+			return f.Name
 		},
 		"fieldKey": func(f fieldEntry) string {
-			return f.Key()
+			return f.Name
 		},
 		"fieldValueString": func(f fieldEntry) string {
 			return printString(f.Value())

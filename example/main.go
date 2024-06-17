@@ -18,6 +18,10 @@ func main() {
 	n := time.Now()
 	h := &hidden{private: true, secret: &n, timeFunc: time.Now,
 		null: nil, m: map[string]int{"answer": 42}}
-
-	structexplorer.NewService("hidden", h).Start()
+	m := map[string]*hidden{
+		"one": h,
+		"two": h,
+	}
+	l := []*hidden{h, h}
+	structexplorer.NewService("hidden", h, "hiddenmap", m, "hiddenlist", l).Start()
 }

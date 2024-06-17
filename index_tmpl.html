@@ -7,15 +7,15 @@
             {{ range .Fields }}
                 {{ $fv := fieldValueString . }}
                 {{ if includeField . $fv }}
-                    <option value="{{fieldKey .}}">{{fieldLabel .}}:{{ $fv }}</option>
+                    <option value="{{.Name}}">{{.Padding}}{{.Name}}:{{ $fv }}</option>
                 {{ end }}
             {{ end }}
         </select>
         <div style="display: block;margin-top: 4px;">
-            <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'down');">&darr;&darr;</button> 
-            <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'right');">&rarr;&rarr;</button>
+            <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'down');">&#8595;&#8595;</button> 
+            <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'right');">&#8594;&#8594;</button>
             <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'toggleNils');">nil</button>
-            <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'remove');">X</button>            
+            <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'remove');">X</button>
         </div>
     {{ end }}
 </div>

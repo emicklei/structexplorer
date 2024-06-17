@@ -51,7 +51,6 @@ func TestFieldMapWithReflects(t *testing.T) {
 	ks := reflectMapKeyToString(reflect.ValueOf(reflect.ValueOf(1)))
 	f := fieldAccess{Owner: m, Name: ks}
 	t.Log(f.Value())
-	t.Log(f.Key())
 	// TODO
 	val := valueAtAccessPath(m, []string{f.Name})
 	t.Log(val)
@@ -106,6 +105,15 @@ func TestFieldSlice(t *testing.T) {
 	s := []int{1, 2}
 	t.Log((&fieldAccess{Owner: s, Name: "0"}).Value())
 	t.Log((&fieldAccess{Owner: s, Name: "1"}).Value())
+}
+
+func TestMapWithIntKey(t *testing.T) {
+	m := map[int]bool{
+		1: true,
+	}
+	if got, want := (&fieldAccess{Owner: m, Name: "1"}).Value(), any(true); got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
 }
 
 func TestValueAtAccessPathStruct(t *testing.T) {

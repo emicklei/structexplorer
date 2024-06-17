@@ -2,6 +2,7 @@ package structexplorer
 
 import (
 	"fmt"
+	"html/template"
 	"log/slog"
 	"reflect"
 	"strconv"
@@ -15,19 +16,12 @@ type fieldAccess struct {
 	Owner any
 	// Name is the name of field in struct
 	// or the string index in a slice or array
-	// or the key hash in a map
-	Name string // for struct
+	// or the encoded key hash in a map
+	Name    string
+	Padding template.HTML
 }
 
-func (f *fieldAccess) Label() string {
-	return f.Name
-}
-
-func (f *fieldAccess) Key() string {
-	return f.Name
-}
-
-func (f *fieldAccess) Value() any {
+func (f fieldAccess) Value() any {
 	rv := reflect.ValueOf(f.Owner)
 	if rv.Kind() == reflect.Interface || rv.Kind() == reflect.Pointer {
 		// is a pointer
@@ -71,9 +65,15 @@ func (f *fieldAccess) Value() any {
 	return nil
 }
 
-func newFields(v any) (list []fieldAccess) {
+func (f fieldAccess) withPaddingTo(size int) fieldAccess {
+	f.Padding = template.HTML(strings.Repeat("&nbsp;", size-len(f.Name)))
+	return f
+}
+
+func newFields(v any) []fieldAccess {
+	list := []fieldAccess{}
 	if v == nil {
-		return
+		return list
 	}
 	var rt reflect.Type
 	rv := reflect.ValueOf(v)
@@ -89,7 +89,7 @@ func newFields(v any) (list []fieldAccess) {
 				Name:  rt.Field(i).Name,
 			})
 		}
-		return
+		return applyPadding(list)
 	}
 	if rt.Kind() == reflect.Slice {
 		for i := 0; i < rv.Len(); i++ {
@@ -98,7 +98,7 @@ func newFields(v any) (list []fieldAccess) {
 				Name:  strconv.Itoa(i),
 			})
 		}
-		return
+		return applyPadding(list)
 	}
 	if rt.Kind() == reflect.Map {
 		for _, key := range rv.MapKeys() {
@@ -107,14 +107,29 @@ func newFields(v any) (list []fieldAccess) {
 				Name:  reflectMapKeyToString(key),
 			})
 		}
-		return
+		return applyPadding(list)
 	}
+
 	slog.Warn("no fields for non struct", "value", v)
-	return
+	return list
+}
+
+func applyPadding(list []fieldAccess) []fieldAccess {
+	// longest field name
+	maxlength := 0
+	for _, each := range list {
+		if l := len(each.Name); l > maxlength {
+			maxlength = l
+		}
+	}
+	// set padding
+	for i := 0; i < len(list); i++ {
+		list[i] = list[i].withPaddingTo(maxlength)
+	}
+	return list
 }
 
 func valueAtAccessPath(value any, path []string) any {
-	//fmt.Println(value, tokens)
 	if value == nil {
 		return nil
 	}
@@ -124,7 +139,7 @@ func valueAtAccessPath(value any, path []string) any {
 	if path[0] == "" {
 		return valueAtAccessPath(value, path[1:])
 	}
-	// index or field name
+	// field name, index or hash of map key
 	fa := fieldAccess{Owner: value, Name: path[0]}
 	return valueAtAccessPath(fa.Value(), path[1:])
 }
@@ -133,17 +148,18 @@ func printString(v any) string {
 	if v == nil {
 		return "nil"
 	}
-	switch v.(type) {
+	switch tv := v.(type) {
 	case string:
-		return strconv.Quote(v.(string))
+		return strconv.Quote(tv)
 	case int, int64, int32, int16, int8, uint, uint64, uint32, uint16, uint8:
 		return fmt.Sprintf("%d", v)
 	case bool:
-		return strconv.FormatBool(v.(bool))
+		return strconv.FormatBool(tv)
 	case float64, float32:
 		return fmt.Sprintf("%f", v)
 	default:
 		rt := reflect.TypeOf(v)
+		// see if we can tell the size
 		if rt.Kind() == reflect.Map || rt.Kind() == reflect.Slice || rt.Kind() == reflect.Array {
 			rv := reflect.ValueOf(v)
 			return fmt.Sprintf("%T (%d)", v, rv.Len())
