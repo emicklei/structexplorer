@@ -1,25 +1,30 @@
-{{define "struct"}}
+{{- define "struct"}}
 <div class="col">
-    {{ if ne .Type "" }}
+    {{- if ne .Type "" }}
         <div class="path" title="{{.Path}}">{{.Label}}</div>
         <div class="typename">{{.Type}}</div>
         <select id="{{.SelectID}}" multiple size="{{.SelectSize}}">
-            {{ range .Fields }}
-                {{ $fv := fieldValueString . }}
-                {{ if includeField . $fv }}
+            {{- range .Fields }}
+                {{- $fv := fieldValueString . }}
+                {{- if includeField . $fv }}
                     <option value="{{.Name}}">{{.Padding}}{{.Name}}:{{ $fv }}</option>
-                {{ end }}
-            {{ end }}
+                {{- end }}
+            {{- end }}
         </select>
+        <script>
+            <!-- update visible size of select -->
+            { const n = document.getElementById('{{.SelectID}}');
+            n.setAttribute("size",n.options.length); }
+        </script>
         <div style="display: block;margin-top: 4px;">
             <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'down');">&#8595;&#8595;</button> 
             <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'right');">&#8594;&#8594;</button>
             <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'toggleNils');">nil</button>
             <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'remove');">X</button>
         </div>
-    {{ end }}
+    {{- end }}
 </div>
-{{end}}
+{{- end}}
 
 <html>
 
@@ -40,7 +45,7 @@
         </tr>    
         {{- end }}     
     </table>
-
+    <p><a style="font-size: x-small;" href="https://github.com/emicklei/structexplorer">structexplorer</a></p>
 </body>
 
 </html>
