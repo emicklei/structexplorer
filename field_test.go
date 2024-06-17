@@ -59,17 +59,34 @@ func TestFieldMapWithReflects(t *testing.T) {
 
 func TestMapKeyAndBack(t *testing.T) {
 	m := map[string]int{"a": 1}
-	ks := mapKeyToString("a")
-	if got, want := ks, "af63bd4c8601b7be"; got != want {
+	ks := reflectMapKeyToString(reflect.ValueOf("a"))
+	if got, want := ks, "a"; got != want {
 		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
 	}
 	rm := reflect.ValueOf(m)
-	k := stringToMapKey(ks, rm)
-	if got, want := k, any("a"); got != want {
+	k := stringToReflectMapKey(ks, rm)
+	if got, want := k, reflect.ValueOf("a"); got.String() != want.String() {
 		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
 	}
-	rv := rm.MapIndex(reflect.ValueOf(k))
+	rv := rm.MapIndex(k)
 	if got, want := rv.Int(), int64(1); got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+}
+
+func TestMapKeyWithDotAndBack(t *testing.T) {
+	m := map[string]int{".": 2}
+	ks := reflectMapKeyToString(reflect.ValueOf("."))
+	if got, want := ks, "817af0b8cb6ee7c"; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+	rm := reflect.ValueOf(m)
+	k := stringToReflectMapKey(ks, rm)
+	if got, want := k, reflect.ValueOf("."); got.String() != want.String() {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+	rv := rm.MapIndex(k)
+	if got, want := rv.Int(), int64(2); got != want {
 		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
 	}
 }

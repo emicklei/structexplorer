@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"reflect"
 	"strconv"
+	"strings"
 	"unsafe"
 
 	"github.com/mitchellh/hashstructure/v2"
@@ -13,8 +14,8 @@ import (
 type fieldAccess struct {
 	Owner any
 	// Name is the name of field in struct
-	// or the string index in slice
-	// or then key hash in the map
+	// or the string index in a slice or array
+	// or the key hash in a map
 	Name string // for struct
 }
 
@@ -29,10 +30,10 @@ func (f *fieldAccess) Key() string {
 func (f *fieldAccess) Value() any {
 	rv := reflect.ValueOf(f.Owner)
 	if rv.Kind() == reflect.Interface || rv.Kind() == reflect.Pointer {
-		// is pointer
+		// is a pointer
 		rv = rv.Elem()
 	} else {
-		// not pointer, create an addressable copy
+		// not a pointer, create an addressable copy
 		tmp := reflect.New(rv.Type()) // create zero value of same type as v
 		tmp.Elem().Set(rv)
 		rv = tmp.Elem()
@@ -171,25 +172,14 @@ func canExplore(v any) bool {
 	return false
 }
 
-func mapKeyToString(key any) string {
-	// fallback to hash of key
-	hash, _ := hashstructure.Hash(key, hashstructure.FormatV2, nil)
-	return strconv.FormatUint(hash, 16)
-}
-func stringToMapKey(hash string, m reflect.Value) any {
-	for _, each := range m.MapKeys() {
-		actualKey := each.Interface()
-		cmp := mapKeyToString(actualKey)
-		if cmp == hash {
-			return actualKey
-		}
-	}
-	return nil
-}
-
 func reflectMapKeyToString(key reflect.Value) string {
 	if key.Kind() == reflect.String {
-		return key.String()
+		s := key.String()
+		// check for path separator
+		if !strings.Contains(s, ".") {
+			return s
+		}
+		// proceed with hash method
 	}
 	if key.Kind() == reflect.Int {
 		return strconv.Itoa(int(key.Int()))

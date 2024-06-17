@@ -45,7 +45,7 @@ func (b *indexDataBuilder) build(row, column int, access objectAccess, value any
 	b.data.Rows[row].Cells[column] = fieldList{
 		Row:        row,
 		Column:     column,
-		Path:       strings.Join(access.path, "/"),
+		Path:       strings.Join(access.path, "."),
 		Label:      access.label,
 		Fields:     entries,
 		Type:       access.typeName,
