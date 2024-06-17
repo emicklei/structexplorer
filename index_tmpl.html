@@ -7,7 +7,7 @@
             {{- range .Fields }}
                 {{- $fv := fieldValueString . }}
                 {{- if includeField . $fv }}
-                    <option value="{{.Name}}">{{.Padding}}{{.Name}}:{{ $fv }}</option>
+                    <option value="{{fieldKey .}}">{{.Padding}}{{fieldLabel .}}:&nbsp;{{ $fv }}</option>
                 {{- end }}
             {{- end }}
         </select>

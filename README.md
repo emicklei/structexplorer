@@ -10,6 +10,6 @@ then a HTTP service will be started
 
     INFO starting go struct explorer at http://localhost:5656
 
-## exploring a yaegi program
+## exploring a [yaegi](https://github.com/traefik/yaegi) program
 
 ![program](./doc/explore_yaegi.png "Yaegi explore")

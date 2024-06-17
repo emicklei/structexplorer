@@ -16,17 +16,24 @@ var indexHTML string
 func (s *service) init() {
 	tmpl := template.New("index")
 	tmpl = tmpl.Funcs(template.FuncMap{
-		"fieldLabel": func(f fieldEntry) string {
-			return f.Name
-		},
-		"fieldKey": func(f fieldEntry) string {
-			return f.Name
-		},
 		"fieldValueString": func(f fieldEntry) string {
-			return printString(f.Value())
+			// prevent panics
+			defer func() {
+				if err := recover(); err != nil {
+					slog.Error("failed to get value of entry", "key", f.key, "owner", f.owner)
+					return
+				}
+			}()
+			return printString(f.value())
 		},
 		"includeField": func(f fieldEntry, s string) bool {
 			return s != "nil" || f.hideNil
+		},
+		"fieldLabel": func(f fieldEntry) string {
+			return f.displayKey()
+		},
+		"fieldKey": func(f fieldEntry) string {
+			return f.key
 		},
 	})
 	tmpl, err := tmpl.Parse(indexHTML)

@@ -32,7 +32,7 @@ func (b *indexDataBuilder) build(row, column int, access objectAccess, value any
 	// replace
 	fields := newFields(value)
 	sort.Slice(fields, func(i, j int) bool {
-		return fields[i].Name < fields[j].Name
+		return fields[i].key < fields[j].key
 	})
 	// copy fields into entries
 	entries := make([]fieldEntry, len(fields))

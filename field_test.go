@@ -26,33 +26,33 @@ func TestFieldValue(t *testing.T) {
 	o := object{
 		i: i, pi: &i, I: i, PI: &i, sl: []string{"a"}, m: map[string]int{"a": 1},
 	}
-	t.Log((&fieldAccess{Owner: o, Name: "sl"}).Value())
-	t.Log((&fieldAccess{Owner: &o, Name: "i"}).Value())
-	t.Log((&fieldAccess{Owner: o, Name: "pi"}).Value())
-	t.Log((&fieldAccess{Owner: &o, Name: "I"}).Value())
-	t.Log((&fieldAccess{Owner: &o, Name: "PI"}).Value())
-	t.Log((&fieldAccess{Owner: o, Name: "null"}).Value())
-	t.Log((&fieldAccess{Owner: o, Name: "m"}).Value())
+	t.Log((&fieldAccess{owner: o, key: "sl"}).value())
+	t.Log((&fieldAccess{owner: &o, key: "i"}).value())
+	t.Log((&fieldAccess{owner: o, key: "pi"}).value())
+	t.Log((&fieldAccess{owner: &o, key: "I"}).value())
+	t.Log((&fieldAccess{owner: &o, key: "PI"}).value())
+	t.Log((&fieldAccess{owner: o, key: "null"}).value())
+	t.Log((&fieldAccess{owner: o, key: "m"}).value())
 }
 
 func TestFieldMapAccess(t *testing.T) {
-	f := fieldAccess{Owner: map[string]int{"a": 1}, Name: "a"}
-	t.Log(f.Value())
+	f := fieldAccess{owner: map[string]int{"a": 1}, key: "a"}
+	t.Log(f.value())
 }
 func TestFieldMapAccessPointer(t *testing.T) {
 	var a int = 1
-	f := fieldAccess{Owner: map[string]*int{"a": &a}, Name: "a"}
-	t.Log(f.Value())
+	f := fieldAccess{owner: map[string]*int{"a": &a}, key: "a"}
+	t.Log(f.value())
 }
 
 func TestFieldMapWithReflects(t *testing.T) {
 	m := map[reflect.Value]reflect.Value{}
 	m[reflect.ValueOf(1)] = reflect.ValueOf(2)
 	ks := reflectMapKeyToString(reflect.ValueOf(reflect.ValueOf(1)))
-	f := fieldAccess{Owner: m, Name: ks}
-	t.Log(f.Value())
+	f := fieldAccess{owner: m, key: ks}
+	t.Log(f.value())
 	// TODO
-	val := valueAtAccessPath(m, []string{f.Name})
+	val := valueAtAccessPath(m, []string{f.key})
 	t.Log(val)
 }
 
@@ -90,28 +90,36 @@ func TestMapKeyWithDotAndBack(t *testing.T) {
 	}
 }
 
+func TestMapStringString(t *testing.T) {
+	m := map[string]string{"a": "b"}
+	f := fieldAccess{owner: m, key: "a"}
+	if got, want := f.value(), "b"; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+}
+
 func TestNewFields(t *testing.T) {
 	o := object{}
 	nf := newFields(o)
 	if got, want := len(nf), 7; got != want {
 		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
 	}
-	if got, want := nf[0].Name, "i"; got != want {
+	if got, want := nf[0].key, "i"; got != want {
 		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
 	}
 }
 
 func TestFieldSlice(t *testing.T) {
 	s := []int{1, 2}
-	t.Log((&fieldAccess{Owner: s, Name: "0"}).Value())
-	t.Log((&fieldAccess{Owner: s, Name: "1"}).Value())
+	t.Log((&fieldAccess{owner: s, key: "0"}).value())
+	t.Log((&fieldAccess{owner: s, key: "1"}).value())
 }
 
 func TestMapWithIntKey(t *testing.T) {
 	m := map[int]bool{
 		1: true,
 	}
-	if got, want := (&fieldAccess{Owner: m, Name: "1"}).Value(), any(true); got != want {
+	if got, want := (&fieldAccess{owner: m, key: "1"}).value(), any(true); got != want {
 		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
 	}
 }

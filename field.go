@@ -13,16 +13,24 @@ import (
 )
 
 type fieldAccess struct {
-	Owner any
-	// Name is the name of field in struct
+	owner any
+	// key is the name of field in struct
 	// or the string index in a slice or array
 	// or the encoded key hash in a map
-	Name    string
+	key     string
+	label   string
 	Padding template.HTML
 }
 
-func (f fieldAccess) Value() any {
-	rv := reflect.ValueOf(f.Owner)
+func (f fieldAccess) displayKey() string {
+	if f.label != "" {
+		return f.label
+	}
+	return f.key
+}
+
+func (f fieldAccess) value() any {
+	rv := reflect.ValueOf(f.owner)
 	if rv.Kind() == reflect.Interface || rv.Kind() == reflect.Pointer {
 		// is a pointer
 		rv = rv.Elem()
@@ -34,26 +42,32 @@ func (f fieldAccess) Value() any {
 	}
 	var rf reflect.Value
 	if rv.Type().Kind() == reflect.Slice {
-		i, _ := strconv.Atoi(f.Name)
+		i, _ := strconv.Atoi(f.key)
 		rf = rv.Index(i)
 	}
 	if rv.Type().Kind() == reflect.Map {
 		// shortcut for string and int keys
 		keyType := rv.Type().Key()
 		if keyType.Kind() == reflect.String {
-			return rv.MapIndex(reflect.ValueOf(f.Name)).Interface()
+			mv := rv.MapIndex(reflect.ValueOf(f.key))
+			// f.key could be a hash because the key contained a path separator
+			// then mv is not valid and the fallback is needed to get the actual key.
+			// todo: f.key != f.label test?
+			if mv.IsValid() {
+				return mv.Interface()
+			}
 		}
 		if keyType.Kind() == reflect.Int {
-			i, _ := strconv.Atoi(f.Name)
+			i, _ := strconv.Atoi(f.key)
 			return rv.MapIndex(reflect.ValueOf(i)).Interface()
 		}
 		// fallback: name is hash of key
-		key := stringToReflectMapKey(f.Name, rv)
+		key := stringToReflectMapKey(f.key, rv)
 		return rv.MapIndex(key).Interface()
 	}
 	if rv.Type().Kind() == reflect.Struct {
 		// name is field
-		rf = rv.FieldByName(f.Name)
+		rf = rv.FieldByName(f.key)
 	}
 	if !rf.IsValid() || rf.IsZero() {
 		return nil
@@ -66,7 +80,7 @@ func (f fieldAccess) Value() any {
 }
 
 func (f fieldAccess) withPaddingTo(size int) fieldAccess {
-	f.Padding = template.HTML(strings.Repeat("&nbsp;", size-len(f.Name)))
+	f.Padding = template.HTML(strings.Repeat("&nbsp;", size-len(f.displayKey())))
 	return f
 }
 
@@ -85,8 +99,8 @@ func newFields(v any) []fieldAccess {
 	if rt.Kind() == reflect.Struct {
 		for i := range rt.NumField() {
 			list = append(list, fieldAccess{
-				Owner: v,
-				Name:  rt.Field(i).Name,
+				owner: v,
+				key:   rt.Field(i).Name,
 			})
 		}
 		return applyPadding(list)
@@ -94,8 +108,8 @@ func newFields(v any) []fieldAccess {
 	if rt.Kind() == reflect.Slice {
 		for i := 0; i < rv.Len(); i++ {
 			list = append(list, fieldAccess{
-				Owner: v,
-				Name:  strconv.Itoa(i),
+				owner: v,
+				key:   strconv.Itoa(i),
 			})
 		}
 		return applyPadding(list)
@@ -103,8 +117,9 @@ func newFields(v any) []fieldAccess {
 	if rt.Kind() == reflect.Map {
 		for _, key := range rv.MapKeys() {
 			list = append(list, fieldAccess{
-				Owner: v,
-				Name:  reflectMapKeyToString(key),
+				owner: v,
+				label: printString(key),
+				key:   reflectMapKeyToString(key),
 			})
 		}
 		return applyPadding(list)
@@ -118,7 +133,7 @@ func applyPadding(list []fieldAccess) []fieldAccess {
 	// longest field name
 	maxlength := 0
 	for _, each := range list {
-		if l := len(each.Name); l > maxlength {
+		if l := len(each.displayKey()); l > maxlength {
 			maxlength = l
 		}
 	}
@@ -140,8 +155,8 @@ func valueAtAccessPath(value any, path []string) any {
 		return valueAtAccessPath(value, path[1:])
 	}
 	// field name, index or hash of map key
-	fa := fieldAccess{Owner: value, Name: path[0]}
-	return valueAtAccessPath(fa.Value(), path[1:])
+	fa := fieldAccess{owner: value, key: path[0]}
+	return valueAtAccessPath(fa.value(), path[1:])
 }
 
 func printString(v any) string {
@@ -157,6 +172,13 @@ func printString(v any) string {
 		return strconv.FormatBool(tv)
 	case float64, float32:
 		return fmt.Sprintf("%f", v)
+	case reflect.Value:
+		if tv.CanInterface() {
+			return printString(tv.Interface())
+		} else {
+			// todo
+			return "?"
+		}
 	default:
 		rt := reflect.TypeOf(v)
 		// see if we can tell the size
