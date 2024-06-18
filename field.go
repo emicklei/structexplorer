@@ -43,7 +43,10 @@ func (f fieldAccess) value() any {
 	var rf reflect.Value
 	if rv.Type().Kind() == reflect.Slice {
 		i, _ := strconv.Atoi(f.key)
-		rf = rv.Index(i)
+		// element may no longer be there
+		if i < rv.Len() {
+			rf = rv.Index(i)
+		}
 	}
 	if rv.Type().Kind() == reflect.Map {
 		// shortcut for string and int keys
@@ -186,8 +189,15 @@ func printString(v any) string {
 			rv := reflect.ValueOf(v)
 			return fmt.Sprintf("%T (%d)", v, rv.Len())
 		}
-		return fmt.Sprintf("%T", v)
+		return ellipsis(fmt.Sprintf("%[1]T %[1]v", v))
 	}
+}
+
+func ellipsis(s string) string {
+	if len(s) > 32 {
+		return s[:29] + "..."
+	}
+	return s
 }
 
 func canExplore(v any) bool {

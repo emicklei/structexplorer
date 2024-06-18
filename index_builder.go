@@ -32,7 +32,7 @@ func (b *indexDataBuilder) build(row, column int, access objectAccess, value any
 	// replace
 	fields := newFields(value)
 	sort.Slice(fields, func(i, j int) bool {
-		return fields[i].key < fields[j].key
+		return fields[i].displayKey() < fields[j].displayKey()
 	})
 	// copy fields into entries
 	entries := make([]fieldEntry, len(fields))
@@ -49,7 +49,7 @@ func (b *indexDataBuilder) build(row, column int, access objectAccess, value any
 		Label:      access.label,
 		Fields:     entries,
 		Type:       access.typeName,
-		SelectSize: len(fields), // for UI visibility
+		SelectSize: len(fields),
 		SelectID:   fmt.Sprintf("id%d", b.seq),
 	}
 	b.seq++
