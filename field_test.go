@@ -132,3 +132,39 @@ func TestValueAtAccessPathSlice(t *testing.T) {
 	v := valueAtAccessPath([]int{3, 4}, []string{"1"})
 	t.Log(v)
 }
+
+func TestIntPointer(t *testing.T) {
+	i := 1
+	s := printString(&i)
+	if got, want := s, "*1"; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+}
+func TestStringPointer(t *testing.T) {
+	u := "u"
+	s := printString(&u)
+	if got, want := s, `*"u"`; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+}
+func TestBoolPointer(t *testing.T) {
+	b := true
+	s := printString(&b)
+	if got, want := s, `*true`; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+}
+func TestFloatPointer(t *testing.T) {
+	f := 3.14
+	s := printString(&f)
+	if got, want := s, `*3.140000`; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+}
+func TestReflectValueAsMapKey(t *testing.T) {
+	rv := reflect.ValueOf(1)
+	s := printString(rv)
+	if got, want := s, "~1"; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+}

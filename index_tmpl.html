@@ -7,7 +7,7 @@
             {{- range .Fields }}
                 {{- $fv := fieldValueString . }}
                 {{- if includeField . $fv }}
-                    <option value="{{fieldKey .}}">{{.Padding}}{{fieldLabel .}}:&nbsp;{{ $fv }}</option>
+                    <option value="{{fieldKey .}}" title="{{.Type}}">{{.Padding}}{{fieldLabel .}}:&nbsp;{{ $fv }}</option>
                 {{- end }}
             {{- end }}
         </select>
@@ -16,11 +16,11 @@
             { const n = document.getElementById('{{.SelectID}}');
             n.setAttribute("size",n.options.length); }
         </script>
-        <div style="display: block;margin-top: 4px;">
-            <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'down');">&#8595;&#8595;</button> 
-            <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'right');">&#8594;&#8594;</button>
+        <div class="buttonbar">
+            <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'down');">&ddarr;</button> 
+            <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'right');">&rrarr;</button>
             <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'toggleNils');">nil</button>
-            <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'remove');">X</button>
+            <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'remove');">x</button> 
         </div>
     {{- end }}
 </div>

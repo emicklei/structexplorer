@@ -123,7 +123,12 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 	case "right":
 		toColumn++
 	case "remove":
-		s.explorer.removeObjectAt(cmd.Row, cmd.Column)
+		if s.explorer.canRemoveObjectAt(cmd.Row, cmd.Column) {
+			s.explorer.removeObjectAt(cmd.Row, cmd.Column)
+		} else {
+			o := s.explorer.objectAt(cmd.Row, cmd.Column)
+			slog.Warn("cannot remove root struct", "object", o.label, "row", cmd.Row, "column", cmd.Column)
+		}
 		return
 	case "toggleNils":
 		s.explorer.updateObjectAt(cmd.Row, cmd.Column, func(access objectAccess) objectAccess {
@@ -139,9 +144,9 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 	for _, each := range cmd.Selections {
 		newPath := append(fromAccess.path, each)
 		oa := objectAccess{
-			root:  fromAccess.root,
-			path:  newPath,
-			label: strings.Join(newPath, "."),
+			object: fromAccess.object,
+			path:   newPath,
+			label:  strings.Join(newPath, "."),
 		}
 		v := oa.Value()
 		if !canExplore(v) {

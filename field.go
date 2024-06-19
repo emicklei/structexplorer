@@ -19,6 +19,7 @@ type fieldAccess struct {
 	// or the encoded key hash in a map
 	key     string
 	label   string
+	Type    string
 	Padding template.HTML
 }
 
@@ -102,6 +103,7 @@ func newFields(v any) []fieldAccess {
 	if rt.Kind() == reflect.Struct {
 		for i := range rt.NumField() {
 			list = append(list, fieldAccess{
+				Type:  rt.Field(i).Type.String(),
 				owner: v,
 				key:   rt.Field(i).Name,
 			})
@@ -111,6 +113,7 @@ func newFields(v any) []fieldAccess {
 	if rt.Kind() == reflect.Slice {
 		for i := 0; i < rv.Len(); i++ {
 			list = append(list, fieldAccess{
+				Type:  rt.Elem().String(),
 				owner: v,
 				key:   strconv.Itoa(i),
 			})
@@ -120,8 +123,9 @@ func newFields(v any) []fieldAccess {
 	if rt.Kind() == reflect.Map {
 		for _, key := range rv.MapKeys() {
 			list = append(list, fieldAccess{
+				Type:  rt.Elem().String(),
 				owner: v,
-				label: printString(key),
+				label: printString(key.Interface()),
 				key:   reflectMapKeyToString(key),
 			})
 		}
@@ -169,28 +173,40 @@ func printString(v any) string {
 	switch tv := v.(type) {
 	case string:
 		return strconv.Quote(tv)
+	case *string:
+		return "*" + strconv.Quote(*tv)
 	case int, int64, int32, int16, int8, uint, uint64, uint32, uint16, uint8:
 		return fmt.Sprintf("%d", v)
+	case *int, *int64, *int32, *int16, *int8, *uint, *uint64, *uint32, *uint16, *uint8:
+		rv := reflect.ValueOf(v).Elem()
+		return fmt.Sprintf("*%d", rv.Int())
 	case bool:
 		return strconv.FormatBool(tv)
+	case *bool:
+		return "*" + strconv.FormatBool(*tv)
 	case float64, float32:
 		return fmt.Sprintf("%f", v)
+	case *float64, *float32:
+		rv := reflect.ValueOf(v).Elem()
+		return fmt.Sprintf("*%f", rv.Float())
 	case reflect.Value:
-		if tv.CanInterface() {
-			return printString(tv.Interface())
-		} else {
-			// todo
-			return "?"
-		}
-	default:
-		rt := reflect.TypeOf(v)
-		// see if we can tell the size
-		if rt.Kind() == reflect.Map || rt.Kind() == reflect.Slice || rt.Kind() == reflect.Array {
-			rv := reflect.ValueOf(v)
-			return fmt.Sprintf("%T (%d)", v, rv.Len())
-		}
-		return ellipsis(fmt.Sprintf("%[1]T %[1]v", v))
+		return "~" + printString(tv.Interface())
 	}
+	// can return string?
+	if s, ok := v.(fmt.Stringer); ok {
+		return s.String()
+	}
+	if s, ok := v.(fmt.GoStringer); ok {
+		return s.GoString()
+	}
+	// fallback
+	rt := reflect.TypeOf(v)
+	// see if we can tell the size
+	if rt.Kind() == reflect.Map || rt.Kind() == reflect.Slice || rt.Kind() == reflect.Array {
+		rv := reflect.ValueOf(v)
+		return fmt.Sprintf("%T (%d)", v, rv.Len())
+	}
+	return ellipsis(fmt.Sprintf("%[1]T", v))
 }
 
 func ellipsis(s string) string {

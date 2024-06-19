@@ -6,7 +6,8 @@ import (
 )
 
 type objectAccess struct {
-	root     any
+	isRoot   bool // set to true if is was one of the values at start
+	object   any
 	path     []string
 	label    string
 	typeName string
@@ -14,7 +15,7 @@ type objectAccess struct {
 }
 
 func (o objectAccess) Value() any {
-	return valueAtAccessPath(o.root, o.path)
+	return valueAtAccessPath(o.object, o.path)
 }
 
 func (o objectAccess) isEmpty() bool {
@@ -63,7 +64,8 @@ func newExplorerOnAll(labelValuePairs ...any) *explorer {
 			continue
 		}
 		s.objectAtPut(i, 0, objectAccess{
-			root:     value,
+			isRoot:   true,
+			object:   value,
 			path:     []string{""},
 			label:    label,
 			typeName: fmt.Sprintf("%T", value),
@@ -78,6 +80,14 @@ func (e *explorer) objectAt(row, col int) objectAccess {
 		return objectAccess{}
 	}
 	return r[col]
+}
+
+func (e *explorer) canRemoveObjectAt(row, col int) bool {
+	r, ok := e.accessMap[row]
+	if !ok {
+		return false
+	}
+	return !r[col].isRoot
 }
 
 func (e *explorer) removeObjectAt(row, col int) {
