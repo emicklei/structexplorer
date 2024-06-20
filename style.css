@@ -1,19 +1,42 @@
+:root {
+    --background-color: #ADD8E6FF;
+    --font-color: #2c2c2c;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background-color: #21292c;
+        --font-color: #c1c1c1;
+    }
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+    color: var(--font-color);
+}
+
+body {
+    margin: 4px;
+    padding: 1rem 1.5rem;
+    box-sizing: border-box;
+    font-family: monospace, monospace;
+
+    background-color: var(--background-color);
+}
+
 select {
+    font-size: 14px;
     overflow-y: hidden;
     font-family: monospace, monospace;
-    font-size: small;
+    color: var(--font-color);
     height: 100%;
     width: 100%;
 }
 
 option {
     padding: 2px;
-}
-
-body {
-    margin: 4;
-    font-family: monospace, monospace;
-    background-color: lightblue;
 }
 
 td {
@@ -33,10 +56,21 @@ td {
 }
 
 .path {
-    font-size: small;
+    font-size: 14px;
     font-style: italic;
 }
 
 .typename {
-    font-size: small;
+    font-size: 14px;
+}
+
+.buttonbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.buttonbar .btn {
+    font-size: 14px;
+    margin: 0;
 }

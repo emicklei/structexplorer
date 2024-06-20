@@ -1,51 +1,65 @@
+<!DOCTYPE html>
+
 {{- define "struct"}}
 <div class="col">
     {{- if ne .Type "" }}
-        <div class="path" title="{{.Path}}">{{.Label}}</div>
-        <div class="typename">{{.Type}}</div>
-        <select id="{{.SelectID}}" multiple size="{{.SelectSize}}">
-            {{- range .Fields }}
-                {{- $fv := fieldValueString . }}
-                {{- if includeField . $fv }}
-                    <option value="{{fieldKey .}}" title="{{.Type}}">{{.Padding}}{{fieldLabel .}}:&nbsp;{{ $fv }}</option>
-                {{- end }}
-            {{- end }}
-        </select>
-        <script>
-            <!-- update visible size of select -->
-            { const n = document.getElementById('{{.SelectID}}');
-            n.setAttribute("size",n.options.length); }
-        </script>
-        <div class="buttonbar">
-            <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'down');">&ddarr;</button> 
-            <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'right');">&rrarr;</button>
-            <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'toggleNils');">nil</button>
-            <button onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'remove');">x</button> 
-        </div>
+    <div class="path" title="{{.Path}}">{{.Label}}</div>
+    <div class="typename">{{.Type}}</div>
+    <select id="{{.SelectID}}" multiple size="{{.SelectSize}}">
+        {{- range .Fields }}
+        {{- $fv := fieldValueString . }}
+        {{- if includeField . $fv }}
+        <option value="{{fieldKey .}}" title="{{.Type}}">{{.Padding}}{{fieldLabel .}}:&nbsp;{{ $fv }}</option>
+        {{- end }}
+        {{- end }}
+    </select>
+    <script>
+        <!-- update visible size of select -->
+        {
+            const n = document.getElementById('{{.SelectID}}');
+            n.setAttribute("size", n.options.length);
+        }
+    </script>
+    <div class="buttonbar">
+        <button class="btn" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'down');">&ddarr;</button>
+        <button class="btn" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'right');">&rrarr;</button>
+        <button class="btn" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'toggleNils');">nil</button>
+        <button class="btn" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'remove');">x</button>
+    </div>
     {{- end }}
 </div>
 {{- end}}
 
-<html>
 
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="color-scheme" content="light dark"/>
+
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ADD8E6FF"/>
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#21292c"/>
+
+    <title>Struct Explorer</title>
+
     <script>{{.Script}}</script>
     <style>{{.Style}}</style>
 </head>
 
 <body>
-    <table>
-        {{- range .Rows }}
-        <tr>
-            {{- range .Cells}}
-            <td>
-                {{ template "struct" . }}
-            </td>
-            {{- end }}
-        </tr>    
-        {{- end }}     
-    </table>
-    <p><a style="font-size: x-small;" href="https://github.com/emicklei/structexplorer">structexplorer</a></p>
+<table>
+    {{- range .Rows }}
+    <tr>
+        {{- range .Cells}}
+        <td>
+            {{ template "struct" . }}
+        </td>
+        {{- end }}
+    </tr>
+    {{- end }}
+</table>
+<p><a style="font-size: x-small;" href="https://github.com/emicklei/structexplorer">structexplorer</a></p>
 </body>
 
 </html>
