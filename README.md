@@ -15,6 +15,14 @@ then a HTTP service will be started
 - if a value is a pointer to a standard type then the display value has a "*" prefix
 - if a value is a reflect.Value then the display value has a "~" prefix
 
+## buttons
+
+- ⇊ : explore one or more selected values from the list and put them below
+- ⇉ : explore one or more selected values from the list and put them on the right
+- nil : show or hide values which are nil
+- x : remove the struct from the page
+
+
 ## exploring a [yaegi](https://github.com/traefik/yaegi) program
 
 ![program](./doc/explore_yaegi.png "Yaegi explore")

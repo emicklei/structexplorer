@@ -49,6 +49,7 @@ func (b *indexDataBuilder) build(row, column int, access objectAccess, value any
 		Label:      access.label,
 		Fields:     entries,
 		Type:       access.typeName,
+		IsRoot:     access.isRoot,
 		SelectSize: len(fields),
 		SelectID:   fmt.Sprintf("id%d", b.seq),
 	}

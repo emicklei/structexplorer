@@ -24,7 +24,9 @@
         <button class="btn" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'down');">&ddarr;</button>
         <button class="btn" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'right');">&rrarr;</button>
         <button class="btn" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'toggleNils');">nil</button>
-        <button class="btn" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'remove');">x</button>
+        {{- if not .IsRoot }}
+            <button class="btn" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'remove');">x</button>
+        {{- end }}
     </div>
     {{- end }}
 </div>
@@ -59,7 +61,7 @@
     </tr>
     {{- end }}
 </table>
-<p><a style="font-size: x-small;" href="https://github.com/emicklei/structexplorer">structexplorer</a></p>
+<p style="font-size: x-small;" >&copy; 2024 <a href="https://github.com/emicklei/structexplorer">structexplorer</a></p>
 </body>
 
 </html>

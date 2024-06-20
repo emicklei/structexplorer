@@ -19,7 +19,7 @@ html, body {
 
 body {
     margin: 4px;
-    padding: 1rem 1.5rem;
+    /* padding: 1rem 1.5rem; */
     box-sizing: border-box;
     font-family: monospace, monospace;
 

@@ -26,6 +26,7 @@ type (
 		Row        int
 		Column     int
 		Type       string
+		IsRoot     bool
 		Access     string
 		Fields     []fieldEntry
 		SelectSize int
