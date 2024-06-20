@@ -1,14 +1,39 @@
 package structexplorer
 
 import (
+	"net/http"
 	"reflect"
 	"testing"
 )
 
-func TestValueAt(t *testing.T) {
+func Test_valueAtAccessPath(t *testing.T) {
 	i := indexData{Rows: []tableRow{{}}}
 	s := valueAtAccessPath(i, []string{"Rows"})
-	t.Log(s)
+	if got, want := len(s.([]tableRow)), 1; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+}
+func Test_valueAtAccessPathBool(t *testing.T) {
+	v := struct{ b bool }{true}
+	w := valueAtAccessPath(v, []string{"b"})
+	if got, want := w, true; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+}
+func Test_valueAtAccessPathFloat32(t *testing.T) {
+	v := struct{ f float32 }{1.0}
+	w := valueAtAccessPath(v, []string{"f"})
+	if got, want := w, float32(1.0); got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+}
+
+func Test_valueAtAccessPathFloat64(t *testing.T) {
+	v := struct{ f float64 }{1.0}
+	w := valueAtAccessPath(v, []string{"f"})
+	if got, want := w, float64(1.0); got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
 }
 
 type object struct {
@@ -166,5 +191,54 @@ func TestReflectValueAsMapKey(t *testing.T) {
 	s := printString(rv)
 	if got, want := s, "~1"; got != want {
 		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+}
+
+func TestFieldsForSlice(t *testing.T) {
+	l := []int{1, 2}
+	fields := newFields(l)
+	if got, want := fields[0].key, "0"; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+	if got, want := fields[1].label, ""; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+	if got, want := fields[1].Type, "int"; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+	if got, want := fields[1].value(), 2; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+}
+func TestFieldsForNil(t *testing.T) {
+	if got, want := len(newFields(nil)), 0; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+}
+func TestFieldsForPointer(t *testing.T) {
+	req := new(http.Request)
+	list := newFields(req)
+	if got, want := len(list), 25; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+}
+func TestFieldsForMap(t *testing.T) {
+	m := map[int]int{
+		1: 2, 3: 4,
+	}
+	l := newFields(m)
+	if got, want := len(l), 2; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+	if got, want := l[0].value(), 2; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+}
+
+func TestFieldsNone(t *testing.T) {
+	c := make(chan bool, 1)
+	l := newFields(c)
+	if got, want := len(l), 0; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
 	}
 }

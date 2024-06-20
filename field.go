@@ -132,7 +132,7 @@ func newFields(v any) []fieldAccess {
 		return applyPadding(list)
 	}
 
-	slog.Warn("no fields for non struct", "value", v)
+	slog.Warn("no fields for non struct", "value", v, "type", fmt.Sprintf("%T", v))
 	return list
 }
 
