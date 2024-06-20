@@ -150,7 +150,7 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 		}
 		v := oa.Value()
 		if !canExplore(v) {
-			slog.Warn("cannot explore this", "value", v)
+			slog.Warn("cannot explore this", "value", v, "type", fmt.Sprintf("%T", v))
 			continue
 		}
 		oa.typeName = fmt.Sprintf("%T", v)

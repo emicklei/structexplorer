@@ -19,10 +19,10 @@ then a HTTP service will be started
 
 - ⇊ : explore one or more selected values from the list and put them below
 - ⇉ : explore one or more selected values from the list and put them on the right
-- nil : show or hide values which are nil
+- nil : show or hide fields which currently have nil value
 - x : remove the struct from the page
 
 
-## exploring a [yaegi](https://github.com/traefik/yaegi) program
+## Example of exploring a [yaegi](https://github.com/traefik/yaegi) program
 
 ![program](./doc/explore_yaegi.png "Yaegi explore")
