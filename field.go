@@ -73,7 +73,7 @@ func (f fieldAccess) value() any {
 		// name is field
 		rf = rv.FieldByName(f.key)
 	}
-	if !rf.IsValid() || rf.IsZero() {
+	if !rf.IsValid() {
 		return nil
 	}
 	rf = reflect.NewAt(rf.Type(), unsafe.Pointer(rf.UnsafeAddr())).Elem()
