@@ -1,1 +1,1 @@
-![test](../doc/testingT.png "explore the tester")
+![test](../../doc/testingT.png "explore the tester")
