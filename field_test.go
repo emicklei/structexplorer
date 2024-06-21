@@ -242,3 +242,78 @@ func TestFieldsNone(t *testing.T) {
 		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
 	}
 }
+
+func TestPrintStringPointer(t *testing.T) {
+	var i *int
+	if got, want := printString(i), "nil"; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+	var f *float32
+	if got, want := printString(f), "nil"; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+	var b *bool
+	if got, want := printString(b), "nil"; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+	var s *string
+	if got, want := printString(s), "nil"; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+}
+func TestPrintString(t *testing.T) {
+	var i int
+	if got, want := printString(i), "0"; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+	var f float32
+	if got, want := printString(f), "0.000000"; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+	var b bool
+	if got, want := printString(b), "false"; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+	var s string
+	if got, want := printString(s), `""`; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+	var a any
+	if got, want := printString(a), "nil"; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+}
+
+type str int
+
+func (s str) String() string { return "😊" }
+
+type gostr bool
+
+func (s gostr) GoString() string { return "😱" }
+
+func TestStringerLike(t *testing.T) {
+	var i str
+	if got, want := printString(i), "😊"; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+	var g gostr
+	if got, want := printString(g), "😱"; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+}
+
+func TestPrintStringMap(t *testing.T) {
+	m := map[string]int{"": 0}
+	s := printString(m)
+	if got, want := s, "map[string]int (1)"; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+}
+func TestPrintStringRequest(t *testing.T) {
+	r, _ := http.NewRequest("post", "url", nil)
+	s := printString(r)
+	if got, want := s, "*http.Request"; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+}

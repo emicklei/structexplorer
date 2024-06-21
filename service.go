@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"path"
+	"runtime/debug"
 	"strings"
 )
 
@@ -21,7 +22,8 @@ func (s *service) init() {
 			// prevent panics
 			defer func() {
 				if err := recover(); err != nil {
-					slog.Error("failed to get value of entry", "key", f.key, "owner", f.owner)
+					slog.Error("failed to get value of entry", "key", f.key, "owner", f.owner, "err", err)
+					fmt.Println(string(debug.Stack()))
 					return
 				}
 			}()

@@ -174,20 +174,32 @@ func printString(v any) string {
 	case string:
 		return strconv.Quote(tv)
 	case *string:
+		if tv == nil {
+			return "nil"
+		}
 		return "*" + strconv.Quote(*tv)
 	case int, int64, int32, int16, int8, uint, uint64, uint32, uint16, uint8:
 		return fmt.Sprintf("%d", v)
 	case *int, *int64, *int32, *int16, *int8, *uint, *uint64, *uint32, *uint16, *uint8:
 		rv := reflect.ValueOf(v).Elem()
+		if !rv.IsValid() {
+			return "nil"
+		}
 		return fmt.Sprintf("*%d", rv.Int())
 	case bool:
 		return strconv.FormatBool(tv)
 	case *bool:
+		if tv == nil {
+			return "nil"
+		}
 		return "*" + strconv.FormatBool(*tv)
 	case float64, float32:
 		return fmt.Sprintf("%f", v)
 	case *float64, *float32:
 		rv := reflect.ValueOf(v).Elem()
+		if !rv.IsValid() {
+			return "nil"
+		}
 		return fmt.Sprintf("*%f", rv.Float())
 	case reflect.Value:
 		return "~" + printString(tv.Interface())
