@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/http"
 	"time"
 
 	structexplorer "github.com/emicklei/structexplorer"
@@ -23,5 +24,11 @@ func main() {
 		"two": h,
 	}
 	l := []*hidden{h, h}
-	structexplorer.NewService("hidden", h, "hiddenmap", m, "hiddenlist", l).Start()
+	x := structexplorer.NewService("hidden", h, "hiddenmap", m, "hiddenlist", l)
+	// these are the defaults
+	x.Start(structexplorer.Options{
+		HTTPPort:     5656,
+		ServeMux:     http.DefaultServeMux,
+		HTTPBasePath: "x",
+	})
 }

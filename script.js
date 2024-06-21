@@ -5,7 +5,7 @@ function explore(row, column, selectNode, action) {
     }
     console.log(row, column, selectNode.value, action);
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", "/instructions");
+    xhr.open("POST", instructionURL(window.location.href));
     xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8")
     xhr.send(JSON.stringify({
         row: row,
@@ -13,9 +13,10 @@ function explore(row, column, selectNode, action) {
         action: action,
         selections: getSelectValues(selectNode)
     }));
-    xhr.onload = function () {
-        window.location.reload();
-    }
+    xhr.onload = function () { window.location.reload(); }
+}
+function instructionURL(href) {
+    return href.endsWith("/") ? href + "instructions" : href + "/instructions";
 }
 // Return an array of the selected option values in the control.
 // Select is an HTML select element.

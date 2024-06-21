@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"log/slog"
 	"net/http"
+	"path"
 	"strings"
 )
 
@@ -44,8 +45,16 @@ func (s *service) init() {
 }
 
 type Options struct {
-	HTTPPort int
-	ServeMux *http.ServeMux
+	HTTPPort     int
+	ServeMux     *http.ServeMux
+	HTTPBasePath string
+}
+
+func (o *Options) rootPath() string {
+	if o.HTTPBasePath == "" {
+		return "/"
+	}
+	return path.Join("/", o.HTTPBasePath)
 }
 
 func (o *Options) httpPort() int {
@@ -78,9 +87,10 @@ func (s *service) Start(opts ...Options) {
 	s.init()
 	port := s.explorer.options.httpPort()
 	serveMux := s.explorer.options.serveMux()
-	slog.Info(fmt.Sprintf("starting go struct explorer at http://localhost:%d on %v", port, s.explorer.rootKeys()))
-	serveMux.HandleFunc("/", s.serveIndex)
-	serveMux.HandleFunc("/instructions", s.serveInstructions)
+	rootPath := s.explorer.options.rootPath()
+	slog.Info(fmt.Sprintf("starting go struct explorer at http://localhost:%d%s on %v", port, rootPath, s.explorer.rootKeys()))
+	serveMux.HandleFunc(rootPath, s.serveIndex)
+	serveMux.HandleFunc(path.Join(rootPath, "/instructions"), s.serveInstructions)
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil); err != nil {
 		slog.Error("failed to start server", "err", err)
 	}
