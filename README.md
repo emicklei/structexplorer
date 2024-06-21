@@ -4,11 +4,20 @@
 [![GoDoc](https://pkg.go.dev/badge/github.com/emicklei/structexplorer)](https://pkg.go.dev/github.com/emicklei/structexplorer)
 [![codecov](https://codecov.io/gh/emicklei/structexplorer/branch/master/graph/badge.svg)](https://codecov.io/gh/emicklei/structexplorer)
 
-A Go Struct Explorer Service that offers a remote (HTTP) inspection of any Go struct.
+A Go Struct Explorer Service (http.Handler) that offers remote inspection of any Go struct and its references.
+
+## install
+
+    go get github.com/emicklei/structexplorer
 
 ## usage
 
-    structexplorer.NewService("some structure", aStruct).Start()
+    structexplorer.NewService("some structure", yourStruct).Start()
+
+or as HTTP Handler:
+
+    s := structexplorer.NewService("some structure", yourStruct)
+    http.ListenAndServe(":8080", s)
 
 then a HTTP service will be started
 
@@ -26,7 +35,12 @@ then a HTTP service will be started
 - z : show or hide fields which currently have zero value ("",0,nil,false)
 - x : remove the struct from the page
 
+Note: if the list contains just one structural value then selecting it can be skipped for ⇊ and ⇉.
 
-## Example of exploring a [yaegi](https://github.com/traefik/yaegi) program
+## examples
+
+See folder `examples` for simple programs.
+
+### example of exploring a [yaegi](https://github.com/traefik/yaegi) program
 
 ![program](./doc/explore_yaegi.png "Yaegi explore")

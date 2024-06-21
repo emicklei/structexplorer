@@ -85,31 +85,45 @@ type service struct {
 	indexTemplate *template.Template
 }
 
-// Service is the HTTP service to explore one or more values (structures).
+// Service is an HTTP Handler to explore one or more values (structures).
 type Service interface {
+	http.Handler
 	// Start accepts 0 or 1 Options
 	Start(opts ...Options)
 }
 
 // NewService creates a new to explore one or more values (structures).
 func NewService(labelValuePairs ...any) Service {
-	return &service{explorer: newExplorerOnAll(labelValuePairs...)}
+	s := &service{explorer: newExplorerOnAll(labelValuePairs...)}
+	s.init()
+	return s
 }
 
-// Start accepts 0 or 1 Options, implements Service
+// Start will listen and serve on the given http port and path.
+// it accepts 0 or 1 Options to override defaults.
 func (s *service) Start(opts ...Options) {
 	if len(opts) > 0 {
 		s.explorer.options = &opts[0]
 	}
-	s.init()
 	port := s.explorer.options.httpPort()
 	serveMux := s.explorer.options.serveMux()
 	rootPath := s.explorer.options.rootPath()
 	slog.Info(fmt.Sprintf("starting go struct explorer at http://localhost:%d%s on %v", port, rootPath, s.explorer.rootKeys()))
-	serveMux.HandleFunc(rootPath, s.serveIndex)
-	serveMux.HandleFunc(path.Join(rootPath, "/instructions"), s.serveInstructions)
+	serveMux.Handle(rootPath, s)
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil); err != nil {
-		slog.Error("failed to start server", "err", err)
+		slog.Error("failed to start service", "err", err)
+	}
+}
+
+// ServeHTTP implements http.Handler
+func (s *service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		s.serveIndex(w, r)
+	case http.MethodPost:
+		s.serveInstructions(w, r)
+	default:
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 	}
 }
 
@@ -130,10 +144,6 @@ type uiInstruction struct {
 }
 
 func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 	cmd := uiInstruction{}
 	if err := json.NewDecoder(r.Body).Decode(&cmd); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -153,8 +163,7 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 		if s.explorer.canRemoveObjectAt(cmd.Row, cmd.Column) {
 			s.explorer.removeObjectAt(cmd.Row, cmd.Column)
 		} else {
-			o := s.explorer.objectAt(cmd.Row, cmd.Column)
-			slog.Warn("cannot remove root struct", "object", o.label, "row", cmd.Row, "column", cmd.Column)
+			slog.Warn("cannot remove root struct", "object", fromAccess.label, "row", cmd.Row, "column", cmd.Column)
 		}
 		return
 	case "toggleZeros":
