@@ -46,9 +46,13 @@ func (s *service) init() {
 	s.indexTemplate = tmpl
 }
 
+// Options can be used to configure a Service on startup.
 type Options struct {
-	HTTPPort     int
-	ServeMux     *http.ServeMux
+	// Uses 5656 as the default
+	HTTPPort int
+	// Uses http.DefaultServeMux as default
+	ServeMux *http.ServeMux
+	// Uses "/" as default
 	HTTPBasePath string
 }
 
@@ -78,11 +82,13 @@ type service struct {
 	indexTemplate *template.Template
 }
 
+// Service is the HTTP service to explore one or more values (structures).
 type Service interface {
 	// Start accepts 0 or 1 Options
 	Start(opts ...Options)
 }
 
+// NewService creates a new to explore one or more values (structures).
 func NewService(labelValuePairs ...any) Service {
 	return &service{explorer: newExplorerOnAll(labelValuePairs...)}
 }
