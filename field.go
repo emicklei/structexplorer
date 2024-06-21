@@ -88,6 +88,7 @@ func (f fieldAccess) withPaddingTo(size int) fieldAccess {
 	return f
 }
 
+// pre: canExplore(v)
 func newFields(v any) []fieldAccess {
 	list := []fieldAccess{}
 	if v == nil {
@@ -96,7 +97,8 @@ func newFields(v any) []fieldAccess {
 	var rt reflect.Type
 	rv := reflect.ValueOf(v)
 	if rv.Kind() == reflect.Interface || rv.Kind() == reflect.Pointer {
-		rt = rv.Elem().Type()
+		elm := rv.Elem()
+		rt = elm.Type()
 	} else {
 		rt = reflect.TypeOf(v)
 	}
@@ -202,6 +204,9 @@ func printString(v any) string {
 		}
 		return fmt.Sprintf("*%f", rv.Float())
 	case reflect.Value:
+		if !tv.IsValid() || tv.IsZero() {
+			return "~nil"
+		}
 		return "~" + printString(tv.Interface())
 	}
 	// can return string?
@@ -218,6 +223,12 @@ func printString(v any) string {
 		rv := reflect.ValueOf(v)
 		return fmt.Sprintf("%T (%d)", v, rv.Len())
 	}
+	if rt.Kind() == reflect.Pointer {
+		rv := reflect.ValueOf(v).Elem()
+		if !rv.IsValid() || rv.IsZero() {
+			return "nil"
+		}
+	}
 	return ellipsis(fmt.Sprintf("%[1]T", v))
 }
 
@@ -226,26 +237,6 @@ func ellipsis(s string) string {
 		return s[:29] + "..."
 	}
 	return s
-}
-
-func canExplore(v any) bool {
-	if v == nil {
-		return false
-	}
-	rt := reflect.TypeOf(v)
-	if rt.Kind() == reflect.Interface || rt.Kind() == reflect.Pointer {
-		rt = rt.Elem()
-	}
-	if rt.Kind() == reflect.Struct {
-		return true
-	}
-	if rt.Kind() == reflect.Slice {
-		return true
-	}
-	if rt.Kind() == reflect.Map {
-		return true
-	}
-	return false
 }
 
 func reflectMapKeyToString(key reflect.Value) string {

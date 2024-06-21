@@ -75,10 +75,12 @@ func TestFieldMapWithReflects(t *testing.T) {
 	m[reflect.ValueOf(1)] = reflect.ValueOf(2)
 	ks := reflectMapKeyToString(reflect.ValueOf(reflect.ValueOf(1)))
 	f := fieldAccess{owner: m, key: ks}
-	t.Log(f.value())
-	// TODO
-	val := valueAtAccessPath(m, []string{f.key})
-	t.Log(val)
+	if got, want := f.value().(reflect.Value).Int(), int64(2); got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+	if got, want := valueAtAccessPath(m, []string{f.key}).(reflect.Value).Int(), int64(2); got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
 }
 
 func TestMapKeyAndBack(t *testing.T) {
@@ -227,10 +229,7 @@ func TestFieldsForMap(t *testing.T) {
 		1: 2, 3: 4,
 	}
 	l := newFields(m)
-	if got, want := len(l), 2; got != want && got != 4 { // sometimes it returns 4 TODO
-		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
-	}
-	if got, want := l[0].value(), 2; got != want {
+	if got, want := len(l), 2; got != want {
 		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
 	}
 }
@@ -315,5 +314,33 @@ func TestPrintStringRequest(t *testing.T) {
 	s := printString(r)
 	if got, want := s, "*http.Request"; got != want {
 		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+}
+func TestPrintStringReflectValue1(t *testing.T) {
+	rv := reflect.ValueOf(1)
+	s := printString(rv)
+	if got, want := s, "~1"; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+}
+func TestPrintStringReflectValueNil(t *testing.T) {
+	rv := reflect.ValueOf(nil)
+	s := printString(rv)
+	if got, want := s, "~nil"; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+}
+func TestPrintStringReflectValueReflectValueNil(t *testing.T) {
+	rv := reflect.ValueOf(reflect.ValueOf(nil))
+	s := printString(rv)
+	if got, want := s, "~nil"; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+}
+func TestPrintStringReflectValueReflectValue2(t *testing.T) {
+	rv := reflect.ValueOf(reflect.ValueOf(2))
+	s := printString(rv)
+	if got, want := s, "~~2"; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
 	}
 }

@@ -3,6 +3,7 @@ package structexplorer
 import (
 	"fmt"
 	"log/slog"
+	"reflect"
 )
 
 type objectAccess struct {
@@ -127,4 +128,25 @@ func (e *explorer) buildIndexData() indexData {
 		}
 	}
 	return b.data
+}
+
+func canExplore(v any) bool {
+	rt := reflect.TypeOf(v)
+	if rt.Kind() == reflect.Interface || rt.Kind() == reflect.Pointer {
+		rv := reflect.ValueOf(v)
+		if rv.IsZero() {
+			return false
+		}
+		rt = rt.Elem()
+	}
+	if rt.Kind() == reflect.Struct {
+		return true
+	}
+	if rt.Kind() == reflect.Slice {
+		return true
+	}
+	if rt.Kind() == reflect.Map {
+		return true
+	}
+	return false
 }

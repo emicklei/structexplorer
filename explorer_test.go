@@ -45,3 +45,10 @@ func TestExplorerTable(t *testing.T) {
 		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
 	}
 }
+
+func TestCanExplorePointerNil(t *testing.T) {
+	var w *time.Time
+	if got, want := canExplore(w), false; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+}
