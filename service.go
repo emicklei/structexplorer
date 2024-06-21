@@ -30,7 +30,11 @@ func (s *service) init() {
 			return printString(f.value())
 		},
 		"includeField": func(f fieldEntry, s string) bool {
-			return s != "nil" || f.hideNil
+			switch s {
+			case `""`, "0", "false", "nil":
+				return f.hideZero
+			}
+			return true
 		},
 		"fieldLabel": func(f fieldEntry) string {
 			return f.displayKey()
@@ -154,7 +158,7 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 			slog.Warn("cannot remove root struct", "object", o.label, "row", cmd.Row, "column", cmd.Column)
 		}
 		return
-	case "toggleNils":
+	case "toggleZeros":
 		s.explorer.updateObjectAt(cmd.Row, cmd.Column, func(access objectAccess) objectAccess {
 			access.hideNils = !access.hideNils
 			return access

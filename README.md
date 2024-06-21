@@ -23,7 +23,7 @@ then a HTTP service will be started
 
 - ⇊ : explore one or more selected values from the list and put them below
 - ⇉ : explore one or more selected values from the list and put them on the right
-- nil : show or hide fields which currently have nil value
+- z : show or hide fields which currently have zero value ("",0,nil,false)
 - x : remove the struct from the page
 
 

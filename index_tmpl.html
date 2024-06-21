@@ -23,7 +23,7 @@
     <div class="buttonbar">
         <button class="btn" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'down');">&ddarr;</button>
         <button class="btn" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'right');">&rrarr;</button>
-        <button class="btn" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'toggleNils');">nil</button>
+        <button class="btn" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'toggleZeros');">z</button>
         {{- if not .IsRoot }}
             <button class="btn" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'remove');">x</button>
         {{- end }}
