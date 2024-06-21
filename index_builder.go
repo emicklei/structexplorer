@@ -39,7 +39,7 @@ func (b *indexDataBuilder) build(row, column int, access objectAccess, value any
 	for i, each := range fields {
 		entries[i] = fieldEntry{
 			fieldAccess: each,
-			hideZero:    access.hideNils,
+			hideZero:    access.hideZeros,
 		}
 	}
 	b.data.Rows[row].Cells[column] = fieldList{

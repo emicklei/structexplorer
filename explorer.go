@@ -7,12 +7,12 @@ import (
 )
 
 type objectAccess struct {
-	isRoot   bool // set to true if is was one of the values at start
-	object   any
-	path     []string
-	label    string
-	typeName string
-	hideNils bool
+	isRoot    bool // set to true if is was one of the values at start
+	object    any
+	path      []string
+	label     string
+	typeName  string
+	hideZeros bool
 }
 
 func (o objectAccess) Value() any {
@@ -65,11 +65,12 @@ func newExplorerOnAll(labelValuePairs ...any) *explorer {
 			continue
 		}
 		s.objectAtPut(i, 0, objectAccess{
-			isRoot:   true,
-			object:   value,
-			path:     []string{""},
-			label:    label,
-			typeName: fmt.Sprintf("%T", value),
+			isRoot:    true,
+			object:    value,
+			path:      []string{""},
+			label:     label,
+			hideZeros: true,
+			typeName:  fmt.Sprintf("%T", value),
 		})
 	}
 	return s

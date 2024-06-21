@@ -265,3 +265,11 @@ func stringToReflectMapKey(hash string, m reflect.Value) reflect.Value {
 	// not found is actually a bug
 	return reflect.ValueOf(nil)
 }
+
+func isZeroPrintstring(s string) bool {
+	switch s {
+	case `""`, "0", "false", "nil", "0.000000", "0.000":
+		return true
+	}
+	return false
+}

@@ -30,9 +30,8 @@ func (s *service) init() {
 			return printString(f.value())
 		},
 		"includeField": func(f fieldEntry, s string) bool {
-			switch s {
-			case `""`, "0", "false", "nil":
-				return f.hideZero
+			if isZeroPrintstring(s) {
+				return !f.hideZero
 			}
 			return true
 		},
@@ -160,7 +159,7 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 		return
 	case "toggleZeros":
 		s.explorer.updateObjectAt(cmd.Row, cmd.Column, func(access objectAccess) objectAccess {
-			access.hideNils = !access.hideNils
+			access.hideZeros = !access.hideZeros
 			return access
 		})
 		return
@@ -172,9 +171,10 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 	for _, each := range cmd.Selections {
 		newPath := append(fromAccess.path, each)
 		oa := objectAccess{
-			object: fromAccess.object,
-			path:   newPath,
-			label:  strings.Join(newPath, "."),
+			object:    fromAccess.object,
+			path:      newPath,
+			label:     strings.Join(newPath, "."),
+			hideZeros: true,
 		}
 		v := oa.Value()
 		if !canExplore(v) {
