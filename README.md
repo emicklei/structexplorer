@@ -1,5 +1,9 @@
 ## structexplorer
 
+[![Go](https://github.com/emicklei/structexplorer/actions/workflows/go.yml/badge.svg)](https://github.com/emicklei/structexplorer/actions/workflows/go.yml)
+[![GoDoc](https://pkg.go.dev/badge/github.com/emicklei/structexplorer)](https://pkg.go.dev/github.com/emicklei/structexplorer)
+[![codecov](https://codecov.io/gh/emicklei/structexplorer/branch/master/graph/badge.svg)](https://codecov.io/gh/emicklei/structexplorer)
+
 A Go Struct Explorer Service that offers a remote (HTTP) inspection of any Go struct.
 
 ## usage
