@@ -2,7 +2,7 @@
 
 [![Go](https://github.com/emicklei/structexplorer/actions/workflows/go.yml/badge.svg)](https://github.com/emicklei/structexplorer/actions/workflows/go.yml)
 [![GoDoc](https://pkg.go.dev/badge/github.com/emicklei/structexplorer)](https://pkg.go.dev/github.com/emicklei/structexplorer)
-[![codecov](https://codecov.io/gh/emicklei/structexplorer/branch/master/graph/badge.svg)](https://codecov.io/gh/emicklei/structexplorer)
+[![codecov](https://codecov.io/gh/emicklei/structexplorer/branch/main/graph/badge.svg)](https://codecov.io/gh/emicklei/structexplorer)
 
 A Go Struct Explorer Service (http.Handler) that offers remote inspection of any Go struct and its references.
 
