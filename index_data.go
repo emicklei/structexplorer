@@ -34,6 +34,6 @@ type (
 	}
 	fieldEntry struct {
 		fieldAccess
-		hideNil bool
+		hideZero bool
 	}
 )
