@@ -29,6 +29,6 @@ func main() {
 	x.Start(structexplorer.Options{
 		HTTPPort:     5656,
 		ServeMux:     http.DefaultServeMux,
-		HTTPBasePath: "x",
+		HTTPBasePath: "/",
 	})
 }
