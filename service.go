@@ -78,10 +78,16 @@ type service struct {
 	indexTemplate *template.Template
 }
 
-func NewService(labelValuePairs ...any) *service {
+type Service interface {
+	// Start accepts 0 or 1 Options
+	Start(opts ...Options)
+}
+
+func NewService(labelValuePairs ...any) Service {
 	return &service{explorer: newExplorerOnAll(labelValuePairs...)}
 }
 
+// Start accepts 0 or 1 Options, implements Service
 func (s *service) Start(opts ...Options) {
 	if len(opts) > 0 {
 		s.explorer.options = &opts[0]
