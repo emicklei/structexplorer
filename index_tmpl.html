@@ -7,7 +7,7 @@
     <div class="typename">{{.Type}}</div>
     <select id="{{.SelectID}}" multiple size="{{.SelectSize}}">
         {{- range .Fields }}
-        {{- $fv := fieldValueString . }}
+        {{- $fv := .ValueString }}
         {{- if includeField . $fv }}
         <option value="{{fieldKey .}}" title="{{.Type}}">{{.Padding}}{{fieldLabel .}}:&nbsp;{{ $fv }}</option>
         {{- end }}

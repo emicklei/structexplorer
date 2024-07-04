@@ -8,7 +8,6 @@ import (
 	"log/slog"
 	"net/http"
 	"path"
-	"runtime/debug"
 	"strings"
 )
 
@@ -18,17 +17,6 @@ var indexHTML string
 func (s *service) init() {
 	tmpl := template.New("index")
 	tmpl = tmpl.Funcs(template.FuncMap{
-		"fieldValueString": func(f fieldEntry) string {
-			// prevent panics
-			defer func() {
-				if err := recover(); err != nil {
-					slog.Error("failed to get value of entry", "key", f.key, "owner", f.owner, "err", err)
-					fmt.Println(string(debug.Stack()))
-					return
-				}
-			}()
-			return printString(f.value())
-		},
 		"includeField": func(f fieldEntry, s string) bool {
 			if isZeroPrintstring(s) {
 				return !f.hideZero

@@ -21,7 +21,7 @@ type (
 		Cells []fieldList
 	}
 	fieldList struct {
-		Label      string
+		Label      template.HTML
 		Path       string
 		Row        int
 		Column     int
@@ -34,6 +34,7 @@ type (
 	}
 	fieldEntry struct {
 		fieldAccess
-		hideZero bool
+		hideZero    bool
+		ValueString string // printstring(fieldAcess.value())
 	}
 )

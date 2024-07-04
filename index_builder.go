@@ -3,6 +3,8 @@ package structexplorer
 import (
 	"fmt"
 	"html/template"
+	"log/slog"
+	"runtime/debug"
 	"sort"
 	"strings"
 )
@@ -35,18 +37,27 @@ func (b *indexDataBuilder) build(row, column int, access objectAccess, value any
 		return fields[i].displayKey() < fields[j].displayKey()
 	})
 	// copy fields into entries
+	widest := 0
 	entries := make([]fieldEntry, len(fields))
 	for i, each := range fields {
 		entries[i] = fieldEntry{
 			fieldAccess: each,
 			hideZero:    access.hideZeros,
+			ValueString: safeComputeValueString(each),
 		}
+		if l := len(entries[i].ValueString); l > widest {
+			widest = l
+		}
+	}
+	fieldListLabel := access.label
+	if widest > len(fieldListLabel) {
+		fieldListLabel += strings.Repeat("&nbsp;", widest-len(access.label))
 	}
 	b.data.Rows[row].Cells[column] = fieldList{
 		Row:        row,
 		Column:     column,
 		Path:       strings.Join(access.path, "."),
-		Label:      access.label,
+		Label:      template.HTML(fieldListLabel),
 		Fields:     entries,
 		Type:       access.typeName,
 		IsRoot:     access.isRoot,
@@ -54,4 +65,16 @@ func (b *indexDataBuilder) build(row, column int, access objectAccess, value any
 		SelectID:   fmt.Sprintf("id%d", b.seq),
 	}
 	b.seq++
+}
+
+func safeComputeValueString(fa fieldAccess) string {
+	// prevent panics
+	defer func() {
+		if err := recover(); err != nil {
+			slog.Error("failed to get value of entry", "key", fa.key, "owner", fa.owner, "err", err)
+			fmt.Println(string(debug.Stack()))
+			return
+		}
+	}()
+	return printString(fa.value())
 }
