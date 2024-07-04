@@ -17,7 +17,7 @@ A Go Struct Explorer Service (http.Handler) that offers remote inspection of any
 or as HTTP Handler:
 
     s := structexplorer.NewService("some structure", yourStruct)
-    http.ListenAndServe(":8080", s)
+    http.ListenAndServe(":5656", s)
 
 then a HTTP service will be started
 
@@ -35,7 +35,7 @@ then a HTTP service will be started
 - z : show or hide fields which currently have zero value ("",0,nil,false)
 - x : remove the struct from the page
 
-Note: if the list contains just one structural value then selecting it can be skipped for ⇊ and ⇉.
+Note: if the list contains just one structural value then selecting it can be skipped for both ⇊ and ⇉.
 
 ## examples
 
