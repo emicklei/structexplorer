@@ -12,6 +12,8 @@ import (
 	"github.com/mitchellh/hashstructure/v2"
 )
 
+var maxFieldValueStringLength = 32
+
 type fieldAccess struct {
 	owner any
 	// key is the name of field in struct
@@ -211,10 +213,10 @@ func printString(v any) string {
 	}
 	// can return string?
 	if s, ok := v.(fmt.Stringer); ok {
-		return s.String()
+		return ellipsis(s.String())
 	}
 	if s, ok := v.(fmt.GoStringer); ok {
-		return s.GoString()
+		return ellipsis(s.GoString())
 	}
 	// fallback
 	rt := reflect.TypeOf(v)
@@ -233,8 +235,9 @@ func printString(v any) string {
 }
 
 func ellipsis(s string) string {
-	if len(s) > 32 {
-		return s[:29] + "..."
+	if size := len(s); size > maxFieldValueStringLength {
+		suffix := fmt.Sprintf("...(%d)", size)
+		return s[:maxFieldValueStringLength-len(suffix)] + suffix
 	}
 	return s
 }

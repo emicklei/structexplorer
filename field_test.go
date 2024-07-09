@@ -3,6 +3,7 @@ package structexplorer
 import (
 	"net/http"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -341,6 +342,15 @@ func TestPrintStringReflectValueReflectValue2(t *testing.T) {
 	rv := reflect.ValueOf(reflect.ValueOf(2))
 	s := printString(rv)
 	if got, want := s, "~~2"; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+}
+
+func TestEllipsis(t *testing.T) {
+	if got, want := ellipsis("ok"), "ok"; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+	if got, want := ellipsis(strings.Repeat("zero", 10)), "zerozerozerozerozerozeroz...(40)"; got != want || len(want) != 32 {
 		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
 	}
 }
