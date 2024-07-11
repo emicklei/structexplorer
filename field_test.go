@@ -213,6 +213,22 @@ func TestFieldsForSlice(t *testing.T) {
 		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
 	}
 }
+func TestFieldsForArray(t *testing.T) {
+	l := [2]int{1, 2}
+	fields := newFields(l)
+	if got, want := fields[0].key, "0"; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+	if got, want := fields[1].label, ""; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+	if got, want := fields[1].Type, "int"; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+	if got, want := fields[1].value(), 2; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+}
 func TestFieldsForNil(t *testing.T) {
 	if got, want := len(newFields(nil)), 0; got != want {
 		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
@@ -350,7 +366,7 @@ func TestEllipsis(t *testing.T) {
 	if got, want := ellipsis("ok"), "ok"; got != want {
 		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
 	}
-	if got, want := ellipsis(strings.Repeat("zero", 10)), "zerozerozerozerozerozeroz...(40)"; got != want || len(want) != 32 {
+	if got, want := ellipsis(strings.Repeat("zero", 20)), "zerozerozerozerozerozerozerozerozerozerozerozerozerozeroz...(80)"; got != want || len(want) != 64 {
 		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
 	}
 }

@@ -149,5 +149,8 @@ func canExplore(v any) bool {
 	if rt.Kind() == reflect.Map {
 		return true
 	}
+	if rt.Kind() == reflect.Array {
+		return true
+	}
 	return false
 }
