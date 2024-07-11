@@ -31,27 +31,33 @@ func (b *indexDataBuilder) build(row, column int, access objectAccess, value any
 	for len(b.data.Rows[row].Cells) <= column {
 		b.data.Rows[row].Cells = append(b.data.Rows[row].Cells, fieldList{})
 	}
-	// replace
-	fields := newFields(value)
-	sort.Slice(fields, func(i, j int) bool {
-		return fields[i].displayKey() < fields[j].displayKey()
-	})
 	// copy fields into entries
-	widest := 0
-	entries := make([]fieldEntry, len(fields))
-	for i, each := range fields {
-		entries[i] = fieldEntry{
-			fieldAccess: each,
-			hideZero:    access.hideZeros,
-			ValueString: safeComputeValueString(each),
+	hasZeros := false
+	entries := []fieldEntry{}
+	for _, each := range newFields(value) {
+		valString := safeComputeValueString(each)
+		if isZeroPrintstring(valString) {
+			hasZeros = true
+			if access.hideZeros {
+				continue
+			}
 		}
-		if l := len(entries[i].ValueString); l > widest {
-			widest = l
-		}
+		entries = append(entries, fieldEntry{
+			Label:       each.displayKey(),
+			Key:         each.key,
+			Type:        each.Type,
+			ValueString: valString,
+		})
 	}
+	sort.Slice(entries, func(i, j int) bool {
+		return entries[i].Label < entries[j].Label
+	})
+	entries = applyFieldNamePadding(entries)
+	size := computeSizeOfWidestEntry(entries)
+	// adjust label so that table cell width is used to display select options
 	fieldListLabel := access.label
-	if widest > len(fieldListLabel) {
-		fieldListLabel += strings.Repeat("&nbsp;", widest-len(access.label))
+	if size > len(fieldListLabel) {
+		fieldListLabel += strings.Repeat("&nbsp;", size-len(access.label))
 	}
 	b.data.Rows[row].Cells[column] = fieldList{
 		Row:        row,
@@ -61,7 +67,8 @@ func (b *indexDataBuilder) build(row, column int, access objectAccess, value any
 		Fields:     entries,
 		Type:       access.typeName,
 		IsRoot:     access.isRoot,
-		SelectSize: len(fields),
+		HasZeros:   hasZeros,
+		SelectSize: len(entries),
 		SelectID:   fmt.Sprintf("id%d", b.seq),
 	}
 	b.seq++
@@ -76,5 +83,16 @@ func safeComputeValueString(fa fieldAccess) string {
 			return
 		}
 	}()
-	return printString(fa.value())
+	return ellipsis(printString(fa.value()))
+}
+
+func computeSizeOfWidestEntry(list []fieldEntry) int {
+	size := 0
+	for _, each := range list {
+		s := len(each.Label) + len(": ") + len(each.ValueString)
+		if s > size {
+			size = s
+		}
+	}
+	return size
 }

@@ -2,7 +2,6 @@ package structexplorer
 
 import (
 	"fmt"
-	"html/template"
 	"log/slog"
 	"reflect"
 	"strconv"
@@ -12,17 +11,16 @@ import (
 	"github.com/mitchellh/hashstructure/v2"
 )
 
-var maxFieldValueStringLength = 32
+var maxFieldValueStringLength = 64
 
 type fieldAccess struct {
 	owner any
 	// key is the name of field in struct
 	// or the string index in a slice or array
 	// or the encoded key hash in a map
-	key     string
-	label   string
-	Type    string
-	Padding template.HTML
+	key   string
+	label string
+	Type  string
 }
 
 func (f fieldAccess) displayKey() string {
@@ -45,6 +43,13 @@ func (f fieldAccess) value() any {
 	}
 	var rf reflect.Value
 	if rv.Type().Kind() == reflect.Slice {
+		i, _ := strconv.Atoi(f.key)
+		// element may no longer be there
+		if i < rv.Len() {
+			rf = rv.Index(i)
+		}
+	}
+	if rv.Type().Kind() == reflect.Array {
 		i, _ := strconv.Atoi(f.key)
 		// element may no longer be there
 		if i < rv.Len() {
@@ -85,11 +90,6 @@ func (f fieldAccess) value() any {
 	return nil
 }
 
-func (f fieldAccess) withPaddingTo(size int) fieldAccess {
-	f.Padding = template.HTML(strings.Repeat("&nbsp;", size-len(f.displayKey())))
-	return f
-}
-
 // pre: canExplore(v)
 func newFields(v any) []fieldAccess {
 	list := []fieldAccess{}
@@ -112,7 +112,7 @@ func newFields(v any) []fieldAccess {
 				key:   rt.Field(i).Name,
 			})
 		}
-		return applyPadding(list)
+		return list
 	}
 	if rt.Kind() == reflect.Slice {
 		for i := 0; i < rv.Len(); i++ {
@@ -122,7 +122,17 @@ func newFields(v any) []fieldAccess {
 				key:   strconv.Itoa(i),
 			})
 		}
-		return applyPadding(list)
+		return list
+	}
+	if rt.Kind() == reflect.Array {
+		for i := 0; i < rv.Len(); i++ {
+			list = append(list, fieldAccess{
+				Type:  rt.Elem().String(),
+				owner: v,
+				key:   strconv.Itoa(i),
+			})
+		}
+		return list
 	}
 	if rt.Kind() == reflect.Map {
 		for _, key := range rv.MapKeys() {
@@ -133,18 +143,18 @@ func newFields(v any) []fieldAccess {
 				key:   reflectMapKeyToString(key),
 			})
 		}
-		return applyPadding(list)
+		return list
 	}
 
 	slog.Warn("no fields for non struct", "value", v, "type", fmt.Sprintf("%T", v))
 	return list
 }
 
-func applyPadding(list []fieldAccess) []fieldAccess {
+func applyFieldNamePadding(list []fieldEntry) []fieldEntry {
 	// longest field name
 	maxlength := 0
 	for _, each := range list {
-		if l := len(each.displayKey()); l > maxlength {
+		if l := len(each.Label); l > maxlength {
 			maxlength = l
 		}
 	}
@@ -213,10 +223,10 @@ func printString(v any) string {
 	}
 	// can return string?
 	if s, ok := v.(fmt.Stringer); ok {
-		return ellipsis(s.String())
+		return s.String()
 	}
 	if s, ok := v.(fmt.GoStringer); ok {
-		return ellipsis(s.GoString())
+		return s.GoString()
 	}
 	// fallback
 	rt := reflect.TypeOf(v)
@@ -231,7 +241,7 @@ func printString(v any) string {
 			return "nil"
 		}
 	}
-	return ellipsis(fmt.Sprintf("%[1]T", v))
+	return fmt.Sprintf("%[1]T", v)
 }
 
 func ellipsis(s string) string {

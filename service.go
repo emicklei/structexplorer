@@ -16,20 +16,6 @@ var indexHTML string
 
 func (s *service) init() {
 	tmpl := template.New("index")
-	tmpl = tmpl.Funcs(template.FuncMap{
-		"includeField": func(f fieldEntry, s string) bool {
-			if isZeroPrintstring(s) {
-				return !f.hideZero
-			}
-			return true
-		},
-		"fieldLabel": func(f fieldEntry) string {
-			return f.displayKey()
-		},
-		"fieldKey": func(f fieldEntry) string {
-			return f.key
-		},
-	})
 	tmpl, err := tmpl.Parse(indexHTML)
 	if err != nil {
 		slog.Error("failed to parse template", "err", err)

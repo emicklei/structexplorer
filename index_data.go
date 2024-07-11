@@ -3,6 +3,7 @@ package structexplorer
 import (
 	_ "embed"
 	"html/template"
+	"strings"
 )
 
 //go:embed script.js
@@ -27,14 +28,22 @@ type (
 		Column     int
 		Type       string
 		IsRoot     bool
+		HasZeros   bool
 		Access     string
 		Fields     []fieldEntry
 		SelectSize int
 		SelectID   string
 	}
 	fieldEntry struct {
-		fieldAccess
-		hideZero    bool
+		Label       string
+		Key         string
+		Type        string
 		ValueString string // printstring(fieldAcess.value())
+		Padding     template.HTML
 	}
 )
+
+func (f fieldEntry) withPaddingTo(size int) fieldEntry {
+	f.Padding = template.HTML(strings.Repeat("&nbsp;", size-len(f.Label)))
+	return f
+}
