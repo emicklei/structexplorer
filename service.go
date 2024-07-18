@@ -103,6 +103,11 @@ func (s *service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (s *service) serveIndex(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "text/html")
+
+	// protect explorer state from concurrent access
+	s.explorer.mutex.Lock()
+	defer s.explorer.mutex.Unlock()
+
 	if err := s.indexTemplate.Execute(w, s.explorer.buildIndexData()); err != nil {
 		slog.Error("failed to execute template", "err", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -124,6 +129,10 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	slog.Debug("instruction", "row", cmd.Row, "column", cmd.Column, "selections", cmd.Selections, "action", cmd.Action)
+
+	// protect explorer state from concurrent access
+	s.explorer.mutex.Lock()
+	defer s.explorer.mutex.Unlock()
 
 	fromAccess := s.explorer.objectAt(cmd.Row, cmd.Column)
 	toRow := cmd.Row

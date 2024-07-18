@@ -13,12 +13,13 @@ type hidden struct {
 	timeFunc     func() time.Time
 	anIntPointer *int
 	m            map[string]int
+	stringSlice  []string
 }
 
 func main() {
 	n := time.Now()
 	h := &hidden{private: true, secret: &n, timeFunc: time.Now,
-		anIntPointer: nil, m: map[string]int{"answer": 42}}
+		anIntPointer: nil, m: map[string]int{"answer": 42}, stringSlice: []string{""}}
 	m := map[string]*hidden{
 		"one": h,
 		"two": h,

@@ -38,13 +38,12 @@ func Test_valueAtAccessPathFloat64(t *testing.T) {
 }
 
 type object struct {
-	i    int
-	pi   *int
-	I    int
-	PI   *int
-	null *object
-	sl   []string
-	m    map[string]int
+	i  int
+	pi *int
+	I  int
+	PI *int
+	sl []string
+	m  map[string]int
 }
 
 func TestFieldValue(t *testing.T) {
@@ -129,7 +128,7 @@ func TestMapStringString(t *testing.T) {
 func TestNewFields(t *testing.T) {
 	o := object{}
 	nf := newFields(o)
-	if got, want := len(nf), 7; got != want {
+	if got, want := len(nf), 6; got != want {
 		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
 	}
 	if got, want := nf[0].key, "i"; got != want {
@@ -367,6 +366,21 @@ func TestEllipsis(t *testing.T) {
 		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
 	}
 	if got, want := ellipsis(strings.Repeat("zero", 20)), "zerozerozerozerozerozerozerozerozerozerozerozerozerozeroz...(80)"; got != want || len(want) != 64 {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+}
+
+func TestStringSliceWithEmpty(t *testing.T) {
+	ss := []string{""}
+	fa := newFields(ss)
+	if got, want := len(fa), 1; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+	e := fa[0]
+	if got, want := e.label, ""; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+	if got, want := e.key, "0"; got != want {
 		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"reflect"
+	"sync"
 )
 
 type objectAccess struct {
@@ -24,6 +25,7 @@ func (o objectAccess) isEmpty() bool {
 }
 
 type explorer struct {
+	mutex     *sync.Mutex // to protect concurrent access to the map
 	accessMap map[int]map[int]objectAccess
 	options   *Options // some properties can be modified by user
 }
@@ -52,6 +54,7 @@ func newExplorerOnAll(labelValuePairs ...any) *explorer {
 	s := &explorer{
 		accessMap: map[int]map[int]objectAccess{},
 		options:   new(Options),
+		mutex:     new(sync.Mutex),
 	}
 	for i := 0; i < len(labelValuePairs); i += 2 {
 		label, ok := labelValuePairs[i].(string)
