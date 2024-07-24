@@ -40,11 +40,15 @@ Note: if the list contains just one structural value then selecting it can be sk
 ## explore while debugging
 
 Currently, the standard Go debugger `delve` stops all goroutines while in a debugging session.
-This means the `structexplorer` service will not respond to any HTTP requests.
-An alternative way to use the explorer to see your struct details is to explictly ask it to dump the HTML page to a file.
+This means that if you have started the `structexplorer` service in your program, it will not respond to any HTTP requests during that session.
+
+The explorer can also be asked to dump an HTML page with the current state of values to a file.
 
     s := structexplorer.NewService()
-    s.Explore("some structure", yourStruct).Dump()
+    s.Explore("some structure", yourStruct, "some field", yourStruct.Field).Dump()
+
+Another method is to use a special test case which starts and explorer at the end of a test and then run it with a longer acceptable timeout.
+Have a look at the `examples` to see how to use it.
 
 ## examples
 
