@@ -10,8 +10,9 @@ import (
 )
 
 type indexDataBuilder struct {
-	data indexData
-	seq  int
+	data    indexData
+	seq     int
+	notLive bool
 }
 
 func newIndexDataBuilder() *indexDataBuilder {
@@ -70,6 +71,7 @@ func (b *indexDataBuilder) build(row, column int, access objectAccess, value any
 		HasZeros:   hasZeros,
 		SelectSize: len(entries),
 		SelectID:   fmt.Sprintf("id%d", b.seq),
+		NotLive:    b.notLive,
 	}
 	b.seq++
 }

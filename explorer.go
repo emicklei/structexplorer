@@ -124,8 +124,7 @@ func (e *explorer) objectAtPut(row, col int, access objectAccess) {
 	e.objectAtPut(e.maxRow(col)+1, col, access)
 }
 
-func (e *explorer) buildIndexData() indexData {
-	b := newIndexDataBuilder()
+func (e *explorer) buildIndexData(b *indexDataBuilder) indexData {
 	for row, each := range e.accessMap {
 		for col, access := range each {
 			b.build(row, col, access, access.Value())

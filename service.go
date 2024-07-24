@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"log/slog"
 	"net/http"
+	"os"
 	"path"
 	"strings"
 )
@@ -64,6 +65,10 @@ type Service interface {
 	http.Handler
 	// Start accepts 0 or 1 Options
 	Start(opts ...Options)
+	// Dump writes an HTML file for displaying the current state of the explorer and its entries.
+	Dump()
+	// Explore adds a new entry (next available row in column 0) for a value unless it cannot be explored.
+	Explore(label string, value any) Service
 }
 
 // NewService creates a new to explore one or more values (structures).
@@ -101,17 +106,56 @@ func (s *service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *service) serveIndex(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("content-type", "text/html")
-
+// protect locks the mutex and returns the unlock function for defer calling it.
+func (s *service) protect() func() {
 	// protect explorer state from concurrent access
 	s.explorer.mutex.Lock()
-	defer s.explorer.mutex.Unlock()
+	return s.explorer.mutex.Unlock
+}
 
-	if err := s.indexTemplate.Execute(w, s.explorer.buildIndexData()); err != nil {
+func (s *service) serveIndex(w http.ResponseWriter, r *http.Request) {
+	defer s.protect()()
+
+	w.Header().Set("content-type", "text/html")
+	if err := s.indexTemplate.Execute(w, s.explorer.buildIndexData(newIndexDataBuilder())); err != nil {
 		slog.Error("failed to execute template", "err", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+}
+
+// Explore adds a new entry (next available row in column 0) for a value if it can be explored.
+func (s *service) Explore(label string, value any) Service {
+	defer s.protect()()
+
+	if !canExplore(value) {
+		slog.Info("value can not be explored", "value", value)
+		return s
+	}
+	s.explorer.objectAtPut(0, 0, objectAccess{
+		isRoot:    true,
+		object:    value,
+		path:      []string{""},
+		label:     label,
+		hideZeros: true,
+		typeName:  fmt.Sprintf("%T", value),
+	})
+	return s
+}
+
+// Dump writes an HTML file for displaying the current state of the explorer and its entries.
+func (s *service) Dump() {
+	defer s.protect()()
+
+	out, err := os.Create("structexplorer.html")
+	if err != nil {
+		slog.Error("failed to create dump file", "err", err)
+	}
+	defer out.Close()
+	b := newIndexDataBuilder()
+	b.notLive = true
+	if err := s.indexTemplate.Execute(out, s.explorer.buildIndexData(b)); err != nil {
+		slog.Error("failed to execute template", "err", err)
 	}
 }
 
@@ -130,9 +174,7 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 	}
 	slog.Debug("instruction", "row", cmd.Row, "column", cmd.Column, "selections", cmd.Selections, "action", cmd.Action)
 
-	// protect explorer state from concurrent access
-	s.explorer.mutex.Lock()
-	defer s.explorer.mutex.Unlock()
+	defer s.protect()()
 
 	fromAccess := s.explorer.objectAt(cmd.Row, cmd.Column)
 	toRow := cmd.Row

@@ -37,9 +37,18 @@ then a HTTP service will be started
 
 Note: if the list contains just one structural value then selecting it can be skipped for both ⇊ and ⇉.
 
+## explore while debugging
+
+Currently, the standard Go debugger `delve` stops all goroutines while in a debugging session.
+This means the `structexplorer` service will not respond to any HTTP requests.
+An alternative way to use the explorer to see your struct details is to explictly ask it to dump the HTML page to a file.
+
+    s := structexplorer.NewService()
+    s.Explore("some structure", yourStruct).Dump()
+
 ## examples
 
-See folder `examples` for simple programs.
+See folder `examples` for simple programs demonstrating each feature.
 
 ### example of exploring a [yaegi](https://github.com/traefik/yaegi) program
 

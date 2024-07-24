@@ -7,7 +7,7 @@ import (
 
 func TestExplorer(t *testing.T) {
 	x := newExplorerOnAll("indexData", indexData{})
-	d := x.buildIndexData()
+	d := x.buildIndexData(newIndexDataBuilder())
 	if d.Script == "" {
 		t.Fail()
 	}

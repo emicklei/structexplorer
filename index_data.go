@@ -33,6 +33,7 @@ type (
 		Fields     []fieldEntry
 		SelectSize int
 		SelectID   string
+		NotLive    bool
 	}
 	fieldEntry struct {
 		Label       string
