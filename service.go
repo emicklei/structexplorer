@@ -90,7 +90,7 @@ func (s *service) Start(opts ...Options) {
 	slog.Info(fmt.Sprintf("starting go struct explorer at http://localhost:%d%s on %v", port, rootPath, s.explorer.rootKeys()))
 	serveMux.Handle(rootPath, s)
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil); err != nil {
-		slog.Error("failed to start service", "err", err)
+		slog.Error("[structexplorer] failed to start service", "err", err)
 	}
 }
 
@@ -102,7 +102,7 @@ func (s *service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPost:
 		s.serveInstructions(w, r)
 	default:
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "[structexplorer] method not allowed", http.StatusMethodNotAllowed)
 	}
 }
 
@@ -188,7 +188,7 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 		if s.explorer.canRemoveObjectAt(cmd.Row, cmd.Column) {
 			s.explorer.removeObjectAt(cmd.Row, cmd.Column)
 		} else {
-			slog.Warn("cannot remove root struct", "object", fromAccess.label, "row", cmd.Row, "column", cmd.Column)
+			slog.Warn("[structexplorer] cannot remove root struct", "object", fromAccess.label, "row", cmd.Row, "column", cmd.Column)
 		}
 		return
 	case "toggleZeros":
@@ -198,7 +198,7 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	default:
-		slog.Warn("invalid direction", "action", cmd.Action)
+		slog.Warn("[structexplorer] invalid direction", "action", cmd.Action)
 		http.Error(w, "invalid action", http.StatusBadRequest)
 		return
 	}
@@ -212,7 +212,7 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 		}
 		v := oa.Value()
 		if !canExplore(v) {
-			slog.Warn("cannot explore this", "value", v, "type", fmt.Sprintf("%T", v))
+			slog.Warn("[structexplorer] cannot explore this", "value", v, "type", fmt.Sprintf("%T", v))
 			continue
 		}
 		oa.typeName = fmt.Sprintf("%T", v)

@@ -146,7 +146,7 @@ func newFields(v any) []fieldAccess {
 		return list
 	}
 
-	slog.Warn("no fields for non struct", "value", v, "type", fmt.Sprintf("%T", v))
+	slog.Warn("[structexplorer] no fields for non struct", "value", v, "type", fmt.Sprintf("%T", v))
 	return list
 }
 
