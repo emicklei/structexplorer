@@ -228,7 +228,10 @@ func printString(v any) string {
 	if s, ok := v.(fmt.GoStringer); ok {
 		return s.GoString()
 	}
-	// fallback
+	return fallbackPrintString(v)
+}
+
+func fallbackPrintString(v any) string {
 	rt := reflect.TypeOf(v)
 	// see if we can tell the size
 	if rt.Kind() == reflect.Map || rt.Kind() == reflect.Slice || rt.Kind() == reflect.Array {

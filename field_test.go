@@ -236,7 +236,7 @@ func TestFieldsForNil(t *testing.T) {
 func TestFieldsForPointer(t *testing.T) {
 	req := new(http.Request)
 	list := newFields(req)
-	if got, want := len(list), 25; got != want {
+	if got, want := len(list), 26; got != want {
 		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
 	}
 }

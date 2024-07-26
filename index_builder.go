@@ -77,15 +77,25 @@ func (b *indexDataBuilder) build(row, column int, access objectAccess, value any
 }
 
 func safeComputeValueString(fa fieldAccess) string {
+	if s, ok := tryComputeValueString(fa); ok {
+		return ellipsis(s)
+	}
+	return ellipsis(fallbackPrintString(fa.value()))
+}
+
+func tryComputeValueString(fa fieldAccess) (string, bool) {
 	// prevent panics
 	defer func() {
 		if err := recover(); err != nil {
-			slog.Error("failed to get value of entry", "key", fa.key, "owner", fa.owner, "err", err)
-			fmt.Println(string(debug.Stack()))
+			slog.Error("[structexplorer] failed to get value of entry, fallback display", "key", fa.key, "label", fa.label, "type", fa.Type, "owner", fa.owner, "err", err)
+			full := string(debug.Stack())
+			methodToken := "structexplorer.printString"
+			idx := strings.Index(full, methodToken)
+			fmt.Println(full[:idx+len(methodToken)], "... (more stack left out)")
 			return
 		}
 	}()
-	return ellipsis(printString(fa.value()))
+	return ellipsis(printString(fa.value())), true
 }
 
 func computeSizeOfWidestEntry(list []fieldEntry) int {
