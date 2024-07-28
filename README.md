@@ -6,6 +6,10 @@
 
 A Go Struct Explorer Service (http.Handler) that offers remote inspection of any Go struct and its references.
 
+### example of exploring a [yaegi](https://github.com/traefik/yaegi) program
+
+![program](./doc/explore_yaegi.png "Yaegi explore")
+
 ## install
 
     go get github.com/emicklei/structexplorer
@@ -48,12 +52,7 @@ The explorer can also be asked to dump an HTML page with the current state of va
     s.Explore("some structure", yourStruct, "some field", yourStruct.Field).Dump()
 
 Another method is to use a special test case which starts and explorer at the end of a test and then run it with a longer acceptable timeout.
-Have a look at the `examples` to see how to use it.
 
 ## examples
 
 See folder `examples` for simple programs demonstrating each feature.
-
-### example of exploring a [yaegi](https://github.com/traefik/yaegi) program
-
-![program](./doc/explore_yaegi.png "Yaegi explore")

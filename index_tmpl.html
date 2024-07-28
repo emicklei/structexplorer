@@ -7,7 +7,7 @@
     <div class="typename">{{.Type}}</div>
     <select id="{{.SelectID}}" multiple size="{{.SelectSize}}">
         {{- range .Fields }}
-        <option value="{{.Key}}" title="{{.Type}}">{{.Padding}}{{ .Label }}:&nbsp;{{ .ValueString }}</option>
+        <option value="{{.Key}}" title="{{ .Label }} : {{ .Type }}">{{ .Padding }}{{ .Label }}:&nbsp;{{ .ValueString }}</option>
         {{- end }}
     </select>
     <script>
