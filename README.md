@@ -18,14 +18,18 @@ A Go Struct Explorer Service (http.Handler) that offers remote inspection of any
 
     structexplorer.NewService("some structure", yourStruct).Start()
 
-or as HTTP Handler:
-
-    s := structexplorer.NewService("some structure", yourStruct)
-    http.ListenAndServe(":5656", s)
-
 then a HTTP service will be started
 
     INFO starting go struct explorer at http://localhost:5656
+
+or as root HTTP Handler:
+
+    s := structexplorer.NewService("some structure", yourStruct, "other" , otherStruct)
+    http.ListenAndServe(":5656", s)
+
+or as a HTTP Handler function:
+
+    http.HandleFunc("/explore", structexplorer.NewService("game", game).ServeHTTP)
 
 ## syntax
 
