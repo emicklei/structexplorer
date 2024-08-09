@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 	"unsafe"
@@ -12,6 +13,8 @@ import (
 )
 
 var maxFieldValueStringLength = 64
+
+var sliceOrArrayRangeLength = 50
 
 type fieldAccess struct {
 	owner any
@@ -43,10 +46,22 @@ func (f fieldAccess) value() any {
 	}
 	var rf reflect.Value
 	if rv.Type().Kind() == reflect.Slice {
-		i, _ := strconv.Atoi(f.key)
-		// element may no longer be there
-		if i < rv.Len() {
-			rf = rv.Index(i)
+		// check for range: <int>..<int>
+		if dots := strings.Index(f.key, ".."); dots != -1 {
+			from, _ := strconv.Atoi(f.key[:dots])
+			to, _ := strconv.Atoi(f.key[dots+2:])
+			// elements may no longer be there
+			if to <= rv.Len() {
+				return rv.Slice(from, to+1).Interface()
+			} else {
+				return rv.Slice(from, rv.Len()).Interface()
+			}
+		} else {
+			i, _ := strconv.Atoi(f.key)
+			// element may no longer be there
+			if i < rv.Len() {
+				rf = rv.Index(i)
+			}
 		}
 	}
 	if rv.Type().Kind() == reflect.Array {
@@ -91,6 +106,7 @@ func (f fieldAccess) value() any {
 }
 
 // pre: canExplore(v)
+// post: sorted by label
 func newFields(v any) []fieldAccess {
 	list := []fieldAccess{}
 	if v == nil {
@@ -112,15 +128,34 @@ func newFields(v any) []fieldAccess {
 				key:   rt.Field(i).Name,
 			})
 		}
+		sortEntries(list)
 		return list
 	}
 	if rt.Kind() == reflect.Slice {
-		for i := 0; i < rv.Len(); i++ {
-			list = append(list, fieldAccess{
-				Type:  rt.Elem().String(),
-				owner: v,
-				key:   strconv.Itoa(i),
-			})
+		rts := rt.Elem().String()
+		// check if we need ranges
+		if rv.Len() > sliceOrArrayRangeLength {
+			// add range keys for subslices
+			for from, len := 0, rv.Len(); from < len; from += sliceOrArrayRangeLength {
+				to := from + sliceOrArrayRangeLength - 1
+				if to > len {
+					to = len - 1
+				}
+				list = append(list, fieldAccess{
+					Type:  rts,
+					owner: v,
+					key:   fmt.Sprintf("%d..%d", from, to),
+				})
+			}
+		} else {
+			// one by one
+			for i := 0; i < rv.Len(); i++ {
+				list = append(list, fieldAccess{
+					Type:  rts,
+					owner: v,
+					key:   strconv.Itoa(i),
+				})
+			}
 		}
 		return list
 	}
@@ -143,11 +178,18 @@ func newFields(v any) []fieldAccess {
 				key:   reflectMapKeyToString(key),
 			})
 		}
+		sortEntries(list)
 		return list
 	}
 
 	slog.Warn("[structexplorer] no fields for non struct", "value", v, "type", fmt.Sprintf("%T", v))
 	return list
+}
+
+func sortEntries(entries []fieldAccess) {
+	sort.Slice(entries, func(i, j int) bool {
+		return entries[i].label < entries[j].label
+	})
 }
 
 func applyFieldNamePadding(list []fieldEntry) []fieldEntry {
@@ -288,4 +330,22 @@ func isZeroPrintstring(s string) bool {
 		return true
 	}
 	return false
+}
+
+type interval struct {
+	from, to int // both inclusive
+}
+
+func (i interval) size() int { return i.to - i.from + 1 }
+
+func (i interval) String() string { return fmt.Sprintf("%d..%d", i.from, i.to) }
+
+func isIntervalKey(k string) bool { return strings.Contains(k, "..") }
+
+// pre: k is valid
+func parseInterval(k string) interval {
+	dots := strings.Index(k, "..")
+	from, _ := strconv.Atoi(k[:dots])
+	to, _ := strconv.Atoi(k[dots+2:])
+	return interval{from, to}
 }

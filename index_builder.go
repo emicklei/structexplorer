@@ -5,7 +5,6 @@ import (
 	"html/template"
 	"log/slog"
 	"runtime/debug"
-	"sort"
 	"strings"
 )
 
@@ -50,9 +49,6 @@ func (b *indexDataBuilder) build(row, column int, access objectAccess, value any
 			ValueString: valString,
 		})
 	}
-	sort.Slice(entries, func(i, j int) bool {
-		return entries[i].Label < entries[j].Label
-	})
 	entries = applyFieldNamePadding(entries)
 	size := computeSizeOfWidestEntry(entries)
 	// adjust label so that table cell width is used to display select options

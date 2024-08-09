@@ -234,9 +234,9 @@ func TestFieldsForNil(t *testing.T) {
 	}
 }
 func TestFieldsForPointer(t *testing.T) {
-	req := new(http.Request)
+	req := new(fieldAccess)
 	list := newFields(req)
-	if got, want := len(list), 25; got != want {
+	if got, want := len(list), 4; got != want {
 		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
 	}
 }
@@ -246,6 +246,17 @@ func TestFieldsForMap(t *testing.T) {
 	}
 	l := newFields(m)
 	if got, want := len(l), 2; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+}
+
+func TestFieldsForLargeSlice(t *testing.T) {
+	large := []int{}
+	for range 99 {
+		large = append(large, 0)
+	}
+	l := newFields(large)
+	if got, want := len(l), 10; got != want {
 		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
 	}
 }

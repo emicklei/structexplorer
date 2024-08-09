@@ -8,12 +8,13 @@ import (
 )
 
 type objectAccess struct {
-	isRoot    bool // set to true if is was one of the values at start
-	object    any
-	path      []string
-	label     string
-	typeName  string
-	hideZeros bool
+	isRoot     bool // set to true if is was one of the values at start
+	object     any
+	path       []string
+	label      string
+	typeName   string
+	hideZeros  bool
+	sliceRange interval
 }
 
 func (o objectAccess) Value() any {

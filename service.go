@@ -210,10 +210,19 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 			label:     strings.Join(newPath, "."),
 			hideZeros: true,
 		}
-		v := oa.Value()
-		if !canExplore(v) {
-			slog.Warn("[structexplorer] cannot explore this", "value", v, "type", fmt.Sprintf("%T", v))
-			continue
+		var v any
+		// handle range key
+		if isIntervalKey(each) {
+			oa.sliceRange = parseInterval(each)
+			// accesses same object
+			v = oa.object
+		} else {
+			// other keys
+			v = oa.Value()
+			if !canExplore(v) {
+				slog.Warn("[structexplorer] cannot explore this", "value", v, "type", fmt.Sprintf("%T", v))
+				continue
+			}
 		}
 		oa.typeName = fmt.Sprintf("%T", v)
 		s.explorer.objectAtPut(toRow, toColumn, oa)
