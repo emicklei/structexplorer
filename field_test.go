@@ -256,7 +256,7 @@ func TestFieldsForLargeSlice(t *testing.T) {
 		large = append(large, 0)
 	}
 	l := newFields(large)
-	if got, want := len(l), 10; got != want {
+	if got, want := len(l), (99/sliceOrArrayRangeLength)+1; got != want {
 		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
 	}
 }
