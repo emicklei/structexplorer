@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log/slog"
 	"runtime/debug"
+	"strconv"
 	"strings"
 )
 
@@ -42,9 +43,16 @@ func (b *indexDataBuilder) build(row, column int, access objectAccess, value any
 				continue
 			}
 		}
+		label := each.displayKey()
+		k := each.key
+		// hack TODO
+		if access.sliceRange.size() > 1 {
+			ik, _ := strconv.Atoi(k)
+			label = strconv.Itoa(ik + access.sliceRange.from)
+		}
 		entries = append(entries, fieldEntry{
-			Label:       each.displayKey(),
-			Key:         each.key,
+			Label:       label,
+			Key:         k,
 			Type:        each.Type,
 			ValueString: valString,
 		})

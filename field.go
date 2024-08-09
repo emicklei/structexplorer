@@ -134,7 +134,8 @@ func newFields(v any) []fieldAccess {
 	if rt.Kind() == reflect.Slice {
 		rts := rt.Elem().String()
 		// check if we need ranges
-		if rv.Len() > sliceOrArrayRangeLength {
+		if false {
+			/** rv.Len() > sliceOrArrayRangeLength {
 			// add range keys for subslices
 			for from, len := 0, rv.Len(); from < len; from += sliceOrArrayRangeLength {
 				to := from + sliceOrArrayRangeLength - 1
@@ -146,7 +147,7 @@ func newFields(v any) []fieldAccess {
 					owner: v,
 					key:   fmt.Sprintf("%d..%d", from, to),
 				})
-			}
+			} **/
 		} else {
 			// one by one
 			for i := 0; i < rv.Len(); i++ {
