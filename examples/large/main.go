@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
+	"os"
 
 	structexplorer "github.com/emicklei/structexplorer"
 )
@@ -9,6 +11,10 @@ import (
 type node struct {
 	kids []node
 	id   string
+}
+
+func init() {
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelDebug})))
 }
 
 func main() {

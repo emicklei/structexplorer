@@ -260,6 +260,20 @@ func TestFieldsForLargeSlice(t *testing.T) {
 		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
 	}
 }
+func TestPathForLargeSlice(t *testing.T) {
+	large := []int{}
+	for i := 0; i < 99; i++ {
+		large = append(large, i)
+	}
+	v1 := valueAtAccessPath(large, []string{"0:10"})
+	if len(v1.([]int)) != 10 {
+		t.Fail()
+	}
+	v2 := valueAtAccessPath(large, []string{"0:10", "3"})
+	if v2.(int) != 3 {
+		t.Fail()
+	}
+}
 
 func TestFieldsNone(t *testing.T) {
 	c := make(chan bool, 1)

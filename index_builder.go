@@ -45,10 +45,12 @@ func (b *indexDataBuilder) build(row, column int, access objectAccess, value any
 		}
 		label := each.displayKey()
 		k := each.key
-		// hack TODO
+		// if the access is part of a large slice or array
+		// then offset both the key and label
 		if access.sliceRange.size() > 1 {
 			ik, _ := strconv.Atoi(k)
 			label = strconv.Itoa(ik + access.sliceRange.from)
+			k = label
 		}
 		entries = append(entries, fieldEntry{
 			Label:       label,

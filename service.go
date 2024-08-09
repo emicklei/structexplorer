@@ -113,7 +113,7 @@ func (s *service) protect() func() {
 	return s.explorer.mutex.Unlock
 }
 
-func (s *service) serveIndex(w http.ResponseWriter, r *http.Request) {
+func (s *service) serveIndex(w http.ResponseWriter, _ *http.Request) {
 	defer s.protect()()
 
 	w.Header().Set("content-type", "text/html")
@@ -203,7 +203,7 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for _, each := range cmd.Selections {
-		newPath := append(fromAccess.path, each)
+		newPath := append(append([]string{}, fromAccess.path...), each)
 		oa := objectAccess{
 			object:    fromAccess.object,
 			path:      newPath,
@@ -214,8 +214,8 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 		// handle range key
 		if isIntervalKey(each) {
 			oa.sliceRange = parseInterval(each)
-			// accesses same object
-			v = oa.object
+			// accesses same object, and no need to check canExplore
+			v = fromAccess.object
 		} else {
 			// other keys
 			v = oa.Value()

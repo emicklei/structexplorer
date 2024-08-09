@@ -47,14 +47,12 @@ func (f fieldAccess) value() any {
 	var rf reflect.Value
 	if rv.Type().Kind() == reflect.Slice {
 		// check for range: <int>..<int>
-		if dots := strings.Index(f.key, ".."); dots != -1 {
-			from, _ := strconv.Atoi(f.key[:dots])
-			to, _ := strconv.Atoi(f.key[dots+2:])
+		if interv := parseInterval(f.key); interv.to != 0 {
 			// elements may no longer be there
-			if to <= rv.Len() {
-				return rv.Slice(from, to+1).Interface()
+			if interv.to < rv.Len() {
+				return rv.Slice(interv.from, interv.to).Interface()
 			} else {
-				return rv.Slice(from, rv.Len()).Interface()
+				return rv.Slice(interv.from, rv.Len()).Interface()
 			}
 		} else {
 			i, _ := strconv.Atoi(f.key)
@@ -131,23 +129,22 @@ func newFields(v any) []fieldAccess {
 		sortEntries(list)
 		return list
 	}
-	if rt.Kind() == reflect.Slice {
+	if rt.Kind() == reflect.Slice || rt.Kind() == reflect.Array {
 		rts := rt.Elem().String()
 		// check if we need ranges
-		if false {
-			/** rv.Len() > sliceOrArrayRangeLength {
+		if rv.Len() > sliceOrArrayRangeLength {
 			// add range keys for subslices
 			for from, len := 0, rv.Len(); from < len; from += sliceOrArrayRangeLength {
-				to := from + sliceOrArrayRangeLength - 1
+				to := from + sliceOrArrayRangeLength
 				if to > len {
-					to = len - 1
+					to = len
 				}
 				list = append(list, fieldAccess{
 					Type:  rts,
 					owner: v,
-					key:   fmt.Sprintf("%d..%d", from, to),
+					key:   makeIntervalKey(from, to),
 				})
-			} **/
+			}
 		} else {
 			// one by one
 			for i := 0; i < rv.Len(); i++ {
@@ -157,16 +154,6 @@ func newFields(v any) []fieldAccess {
 					key:   strconv.Itoa(i),
 				})
 			}
-		}
-		return list
-	}
-	if rt.Kind() == reflect.Array {
-		for i := 0; i < rv.Len(); i++ {
-			list = append(list, fieldAccess{
-				Type:  rt.Elem().String(),
-				owner: v,
-				key:   strconv.Itoa(i),
-			})
 		}
 		return list
 	}
@@ -220,6 +207,12 @@ func valueAtAccessPath(value any, path []string) any {
 	}
 	// field name, index or hash of map key
 	fa := fieldAccess{owner: value, key: path[0]}
+	// check for range
+	if isIntervalKey(fa.key) {
+		if len(path) > 1 { // continues after range
+			return valueAtAccessPath(value, path[1:])
+		}
+	}
 	return valueAtAccessPath(fa.value(), path[1:])
 }
 
@@ -334,19 +327,28 @@ func isZeroPrintstring(s string) bool {
 }
 
 type interval struct {
-	from, to int // both inclusive
+	from int // inclusive
+	to   int // exclusive
 }
 
-func (i interval) size() int { return i.to - i.from + 1 }
+func (i interval) size() int { return i.to - i.from }
 
-func (i interval) String() string { return fmt.Sprintf("%d..%d", i.from, i.to) }
+func (i interval) String() string { return fmt.Sprintf("%d:%d", i.from, i.to) }
 
-func isIntervalKey(k string) bool { return strings.Contains(k, "..") }
+func isIntervalKey(k string) bool { return strings.Contains(k, ":") }
 
-// pre: k is valid
+func makeIntervalKey(from, to int) string {
+	return fmt.Sprintf("%d:%d", from, to)
+}
+
+var zeroInterval interval
+
 func parseInterval(k string) interval {
-	dots := strings.Index(k, "..")
+	dots := strings.Index(k, ":")
+	if dots == -1 {
+		return zeroInterval
+	}
 	from, _ := strconv.Atoi(k[:dots])
-	to, _ := strconv.Atoi(k[dots+2:])
+	to, _ := strconv.Atoi(k[dots+1:])
 	return interval{from, to}
 }
