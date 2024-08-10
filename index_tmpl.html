@@ -63,6 +63,19 @@
     {{- end }}
 </table>
 <p style="font-size: x-small;" >&copy; 2024 <a href="https://github.com/emicklei/structexplorer">structexplorer</a></p>
+<!-- script>
+    var ref = document.getElementById('{{.LastAddedElementID}}');
+    if (ref != null) {
+        setTimeout(function () {
+           // table row
+           ref.parentElement.parentElement.parentElement.scrollIntoView({
+               behavior: "smooth",
+               block: "start",
+           });
+      }, 100);
+    }
+</script-->
+
 </body>
 
 </html>

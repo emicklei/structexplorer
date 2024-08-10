@@ -26,9 +26,10 @@ func (o objectAccess) isEmpty() bool {
 }
 
 type explorer struct {
-	mutex     *sync.Mutex // to protect concurrent access to the map
-	accessMap map[int]map[int]objectAccess
-	options   *Options // some properties can be modified by user
+	mutex               *sync.Mutex // to protect concurrent access to the map
+	accessMap           map[int]map[int]objectAccess
+	options             *Options // some properties can be modified by user
+	lastRow, lastColumn int      // location of last added objectAccess
 }
 
 func (e *explorer) maxRow(col int) int {
@@ -119,6 +120,9 @@ func (e *explorer) objectAtPut(row, col int, access objectAccess) {
 	oa, ok := r[col]
 	if !ok || oa.isEmpty() {
 		r[col] = access
+		// remember last acsess location
+		e.lastRow = row
+		e.lastColumn = col
 		return
 	}
 	// cell is taken
@@ -128,7 +132,11 @@ func (e *explorer) objectAtPut(row, col int, access objectAccess) {
 func (e *explorer) buildIndexData(b *indexDataBuilder) indexData {
 	for row, each := range e.accessMap {
 		for col, access := range each {
-			b.build(row, col, access, access.Value())
+			b.build(row, col, access)
+			if row == e.lastRow && col == e.lastColumn {
+				slog.Debug("populate select id", "row", row, "col", col, "id", b.selectID)
+				b.populateSelectID()
+			}
 		}
 	}
 	return b.data

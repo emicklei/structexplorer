@@ -10,9 +10,10 @@ import (
 )
 
 type indexDataBuilder struct {
-	data    indexData
-	seq     int
-	notLive bool
+	data     indexData
+	seq      int
+	notLive  bool
+	selectID string // id of the added fieldList (select element)
 }
 
 func newIndexDataBuilder() *indexDataBuilder {
@@ -24,7 +25,7 @@ func newIndexDataBuilder() *indexDataBuilder {
 	return b
 }
 
-func (b *indexDataBuilder) build(row, column int, access objectAccess, value any) {
+func (b *indexDataBuilder) build(row, column int, access objectAccess) {
 	// check room
 	for len(b.data.Rows) <= row {
 		b.data.Rows = append(b.data.Rows, tableRow{})
@@ -35,7 +36,7 @@ func (b *indexDataBuilder) build(row, column int, access objectAccess, value any
 	// copy fields into entries
 	hasZeros := false
 	entries := []fieldEntry{}
-	for _, each := range newFields(value) {
+	for _, each := range newFields(access.Value()) {
 		valString := safeComputeValueString(each)
 		if isZeroPrintstring(valString) {
 			hasZeros = true
@@ -44,17 +45,17 @@ func (b *indexDataBuilder) build(row, column int, access objectAccess, value any
 			}
 		}
 		label := each.displayKey()
-		k := each.key
+		entryKey := each.key
 		// if the access is part of a large slice or array
 		// then offset both the key and label
 		if access.sliceRange.size() > 1 {
-			ik, _ := strconv.Atoi(k)
+			ik, _ := strconv.Atoi(entryKey)
 			label = strconv.Itoa(ik + access.sliceRange.from)
-			k = label
+			entryKey = label
 		}
 		entries = append(entries, fieldEntry{
 			Label:       label,
-			Key:         k,
+			Key:         entryKey,
 			Type:        each.Type,
 			ValueString: valString,
 		})
@@ -66,6 +67,7 @@ func (b *indexDataBuilder) build(row, column int, access objectAccess, value any
 	if size > len(fieldListLabel) {
 		fieldListLabel += strings.Repeat("&nbsp;", size-len(access.label))
 	}
+	newSelectID := fmt.Sprintf("id%d", b.seq)
 	b.data.Rows[row].Cells[column] = fieldList{
 		Row:        row,
 		Column:     column,
@@ -76,10 +78,15 @@ func (b *indexDataBuilder) build(row, column int, access objectAccess, value any
 		IsRoot:     access.isRoot,
 		HasZeros:   hasZeros,
 		SelectSize: len(entries),
-		SelectID:   fmt.Sprintf("id%d", b.seq),
+		SelectID:   newSelectID,
 		NotLive:    b.notLive,
 	}
+	b.selectID = newSelectID
 	b.seq++
+}
+
+func (b *indexDataBuilder) populateSelectID() {
+	b.data.LastAddedElementID = b.selectID
 }
 
 func safeComputeValueString(fa fieldAccess) string {

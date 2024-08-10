@@ -96,9 +96,15 @@ func (s *service) Start(opts ...Options) {
 
 // ServeHTTP implements http.Handler
 func (s *service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	slog.Debug("serve", "url", r.URL)
 	switch r.Method {
 	case http.MethodGet:
-		s.serveIndex(w, r)
+		// do not serve on favicon
+		if !strings.Contains(path.Base(r.URL.Path), ".") {
+			s.serveIndex(w, r)
+		} else {
+			http.Error(w, "[structexplorer] not found", http.StatusNotFound)
+		}
 	case http.MethodPost:
 		s.serveInstructions(w, r)
 	default:

@@ -249,6 +249,13 @@ func TestFieldsForMap(t *testing.T) {
 		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
 	}
 }
+func TestFieldsForByteArray(t *testing.T) {
+	bs := [2]byte{1, 2}
+	l := newFields(bs)
+	if got, want := len(l), 2; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+}
 
 func TestFieldsForLargeSlice(t *testing.T) {
 	large := []int{}

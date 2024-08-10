@@ -45,14 +45,20 @@ func (f fieldAccess) value() any {
 		rv = tmp.Elem()
 	}
 	var rf reflect.Value
-	if rv.Type().Kind() == reflect.Slice {
+	if rv.Type().Kind() == reflect.Slice || rv.Type().Kind() == reflect.Array {
 		// check for range: <int>..<int>
 		if interv := parseInterval(f.key); interv.to != 0 {
 			// elements may no longer be there
-			if interv.to < rv.Len() {
-				return rv.Slice(interv.from, interv.to).Interface()
+			if interv.from < rv.Len() {
+				if interv.to < rv.Len() {
+					return rv.Slice(interv.from, interv.to).Interface()
+				} else {
+					// to out of bounds
+					return rv.Slice(interv.from, rv.Len()).Interface()
+				}
 			} else {
-				return rv.Slice(interv.from, rv.Len()).Interface()
+				// from out of bounds
+				return rv.Slice(0, 0).Interface()
 			}
 		} else {
 			i, _ := strconv.Atoi(f.key)
@@ -60,13 +66,6 @@ func (f fieldAccess) value() any {
 			if i < rv.Len() {
 				rf = rv.Index(i)
 			}
-		}
-	}
-	if rv.Type().Kind() == reflect.Array {
-		i, _ := strconv.Atoi(f.key)
-		// element may no longer be there
-		if i < rv.Len() {
-			rf = rv.Index(i)
 		}
 	}
 	if rv.Type().Kind() == reflect.Map {
@@ -228,8 +227,10 @@ func printString(v any) string {
 			return "nil"
 		}
 		return "*" + strconv.Quote(*tv)
-	case int, int64, int32, int16, int8, uint, uint64, uint32, uint16, uint8:
+	case int, int64, int32, int16, int8, uint, uint64, uint32, uint16:
 		return fmt.Sprintf("%d", v)
+	case uint8:
+		return fmt.Sprintf("%3d (%s)", v, string(v.(uint8)))
 	case *int, *int64, *int32, *int16, *int8, *uint, *uint64, *uint32, *uint16, *uint8:
 		rv := reflect.ValueOf(v).Elem()
 		if !rv.IsValid() {
@@ -332,8 +333,6 @@ type interval struct {
 }
 
 func (i interval) size() int { return i.to - i.from }
-
-func (i interval) String() string { return fmt.Sprintf("%d:%d", i.from, i.to) }
 
 func isIntervalKey(k string) bool { return strings.Contains(k, ":") }
 
