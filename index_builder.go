@@ -85,10 +85,6 @@ func (b *indexDataBuilder) build(row, column int, access objectAccess) {
 	b.seq++
 }
 
-func (b *indexDataBuilder) populateSelectID() {
-	b.data.LastAddedElementID = b.selectID
-}
-
 func safeComputeValueString(fa fieldAccess) string {
 	if s, ok := tryComputeValueString(fa); ok {
 		return ellipsis(s)

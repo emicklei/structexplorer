@@ -26,18 +26,20 @@ func (o objectAccess) isEmpty() bool {
 }
 
 type explorer struct {
-	mutex               *sync.Mutex // to protect concurrent access to the map
-	accessMap           map[int]map[int]objectAccess
-	options             *Options // some properties can be modified by user
-	lastRow, lastColumn int      // location of last added objectAccess
+	mutex     *sync.Mutex // to protect concurrent access to the map
+	accessMap map[int]map[int]objectAccess
+	options   *Options // some properties can be modified by user
 }
 
-func (e *explorer) maxRow(col int) int {
+func (e *explorer) maxColumn(row int) int {
 	max := 0
-	for row, cols := range e.accessMap {
-		_, ok := cols[col]
-		if ok && row > max {
-			max = row
+	cols, ok := e.accessMap[row]
+	if !ok {
+		return 0
+	}
+	for col := range cols {
+		if col > max {
+			max = col
 		}
 	}
 	return max
@@ -58,6 +60,7 @@ func newExplorerOnAll(labelValuePairs ...any) *explorer {
 		options:   new(Options),
 		mutex:     new(sync.Mutex),
 	}
+	row := 0
 	for i := 0; i < len(labelValuePairs); i += 2 {
 		label, ok := labelValuePairs[i].(string)
 		if !ok {
@@ -69,7 +72,7 @@ func newExplorerOnAll(labelValuePairs ...any) *explorer {
 			slog.Info("value can not be explored", "value", value)
 			continue
 		}
-		s.objectAtPut(i, 0, objectAccess{
+		s.objectAtPut(row, 0, objectAccess{
 			isRoot:    true,
 			object:    value,
 			path:      []string{""},
@@ -77,6 +80,7 @@ func newExplorerOnAll(labelValuePairs ...any) *explorer {
 			hideZeros: true,
 			typeName:  fmt.Sprintf("%T", value),
 		})
+		row++
 	}
 	return s
 }
@@ -120,23 +124,16 @@ func (e *explorer) objectAtPut(row, col int, access objectAccess) {
 	oa, ok := r[col]
 	if !ok || oa.isEmpty() {
 		r[col] = access
-		// remember last acsess location
-		e.lastRow = row
-		e.lastColumn = col
 		return
 	}
 	// cell is taken
-	e.objectAtPut(e.maxRow(col)+1, col, access)
+	e.objectAtPut(row, e.maxColumn(row)+1, access)
 }
 
 func (e *explorer) buildIndexData(b *indexDataBuilder) indexData {
 	for row, each := range e.accessMap {
 		for col, access := range each {
 			b.build(row, col, access)
-			if row == e.lastRow && col == e.lastColumn {
-				slog.Debug("populate select id", "row", row, "col", col, "id", b.selectID)
-				b.populateSelectID()
-			}
 		}
 	}
 	return b.data

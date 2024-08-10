@@ -41,7 +41,7 @@ func TestExplorerTable(t *testing.T) {
 	if o2.object != o3.object {
 		t.Fail()
 	}
-	if got, want := x.maxRow(1), 1; got != want {
+	if got, want := x.maxColumn(1), 1; got != want {
 		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
 	}
 	if !x.canRemoveObjectAt(1, 1) {

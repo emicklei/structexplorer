@@ -14,10 +14,9 @@ var styleCSS string
 
 type (
 	indexData struct {
-		Rows               []tableRow
-		Script             template.JS
-		Style              template.CSS
-		LastAddedElementID string
+		Rows   []tableRow
+		Script template.JS
+		Style  template.CSS
 	}
 	tableRow struct {
 		Cells []fieldList
