@@ -80,9 +80,37 @@ func (f fieldAccess) value() any {
 				return mv.Interface()
 			}
 		}
-		if keyType.Kind() == reflect.Int || keyType.Kind() == reflect.Int8 || keyType.Kind() == reflect.Int16 || keyType.Kind() == reflect.Int32 || keyType.Kind() == reflect.Int64 {
+		switch keyType.Kind() {
+		case reflect.Int:
 			i, _ := strconv.Atoi(f.key)
 			return rv.MapIndex(reflect.ValueOf(i)).Interface()
+		case reflect.Int8:
+			i, _ := strconv.ParseInt(f.key, 10, 8)
+			return rv.MapIndex(reflect.ValueOf(int8(i))).Interface()
+		case reflect.Int16:
+			i, _ := strconv.ParseInt(f.key, 10, 16)
+			return rv.MapIndex(reflect.ValueOf(int16(i))).Interface()
+		case reflect.Int32:
+			i, _ := strconv.ParseInt(f.key, 10, 32)
+			return rv.MapIndex(reflect.ValueOf(int32(i))).Interface()
+		case reflect.Int64:
+			i, _ := strconv.ParseInt(f.key, 10, 64)
+			return rv.MapIndex(reflect.ValueOf(i)).Interface()
+		case reflect.Uint:
+			i, _ := strconv.ParseUint(f.key, 10, 0)
+			return rv.MapIndex(reflect.ValueOf(uint(i))).Interface()
+		case reflect.Uint8:
+			i, _ := strconv.ParseUint(f.key, 10, 8)
+			return rv.MapIndex(reflect.ValueOf(uint8(i))).Interface()
+		case reflect.Uint16:
+			i, _ := strconv.ParseUint(f.key, 10, 16)
+			return rv.MapIndex(reflect.ValueOf(uint16(i))).Interface()
+		case reflect.Uint32:
+			i, _ := strconv.ParseUint(f.key, 10, 32)
+			return rv.MapIndex(reflect.ValueOf(uint32(i))).Interface()
+		case reflect.Uint64:
+			i, _ := strconv.ParseUint(f.key, 10, 64)
+			return rv.MapIndex(reflect.ValueOf(uint64(i))).Interface()
 		}
 		// fallback: name is hash of key
 		key := stringToReflectMapKey(f.key, rv)
