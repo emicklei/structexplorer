@@ -1,4 +1,4 @@
-### v0.4.1
+### v0.4.2
 
 - fix fixed sized integer keys in maps
 
