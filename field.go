@@ -80,7 +80,7 @@ func (f fieldAccess) value() any {
 				return mv.Interface()
 			}
 		}
-		if keyType.Kind() == reflect.Int {
+		if keyType.Kind() == reflect.Int || keyType.Kind() == reflect.Int8 || keyType.Kind() == reflect.Int16 || keyType.Kind() == reflect.Int32 || keyType.Kind() == reflect.Int64 {
 			i, _ := strconv.Atoi(f.key)
 			return rv.MapIndex(reflect.ValueOf(i)).Interface()
 		}
@@ -293,16 +293,19 @@ func ellipsis(s string) string {
 }
 
 func reflectMapKeyToString(key reflect.Value) string {
+	// string and integer keys
 	if key.Kind() == reflect.String {
 		s := key.String()
 		// check for path separator
 		if !strings.Contains(s, ".") {
 			return s
 		}
-		// proceed with hash method
 	}
-	if key.Kind() == reflect.Int {
+	if key.Kind() == reflect.Int || key.Kind() == reflect.Int8 || key.Kind() == reflect.Int16 || key.Kind() == reflect.Int32 || key.Kind() == reflect.Int64 {
 		return strconv.Itoa(int(key.Int()))
+	}
+	if key.Kind() == reflect.Uint || key.Kind() == reflect.Uint8 || key.Kind() == reflect.Uint16 || key.Kind() == reflect.Uint32 || key.Kind() == reflect.Uint64 {
+		return strconv.FormatUint(uint64(key.Uint()), 10)
 	}
 	// fallback to hash of key
 	hash, _ := hashstructure.Hash(key, hashstructure.FormatV2, nil)

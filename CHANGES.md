@@ -1,3 +1,7 @@
+### v0.4.1
+
+- fix fixed sized integer keys in maps
+
 ### v0.4.0
 
 - (fixed) sorted integer keys in slice/array

@@ -100,6 +100,13 @@ func TestMapKeyAndBack(t *testing.T) {
 	}
 }
 
+func TestMapKeyUint32(t *testing.T) {
+	k1 := reflectMapKeyToString(reflect.ValueOf(uint32(2043)))
+	if got, want := k1, "2043"; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+}
+
 func TestMapKeyWithDotAndBack(t *testing.T) {
 	m := map[string]int{".": 2}
 	ks := reflectMapKeyToString(reflect.ValueOf("."))
