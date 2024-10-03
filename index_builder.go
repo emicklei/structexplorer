@@ -25,7 +25,12 @@ func newIndexDataBuilder() *indexDataBuilder {
 	return b
 }
 
-func (b *indexDataBuilder) build(row, column int, access objectAccess) {
+type cellInfo struct {
+	entriesCount int
+	hasZeros     bool
+}
+
+func (b *indexDataBuilder) build(row, column int, access objectAccess) cellInfo {
 	// check room
 	for len(b.data.Rows) <= row {
 		b.data.Rows = append(b.data.Rows, tableRow{})
@@ -83,6 +88,7 @@ func (b *indexDataBuilder) build(row, column int, access objectAccess) {
 	}
 	b.selectID = newSelectID
 	b.seq++
+	return cellInfo{entriesCount: len(entries), hasZeros: hasZeros}
 }
 
 func safeComputeValueString(fa fieldAccess) string {

@@ -72,7 +72,7 @@ func newExplorerOnAll(labelValuePairs ...any) *explorer {
 			slog.Info("value can not be explored", "value", value)
 			continue
 		}
-		s.objectAtPut(row, 0, objectAccess{
+		s.putObjectOnRowStartingAtColumn(row, 0, objectAccess{
 			isRoot:    true,
 			object:    value,
 			path:      []string{""},
@@ -112,10 +112,10 @@ func (e *explorer) removeObjectAt(row, col int) {
 func (e *explorer) updateObjectAt(row, col int, updater func(access objectAccess) objectAccess) {
 	old := e.objectAt(row, col)
 	e.removeObjectAt(row, col)
-	e.objectAtPut(row, col, updater(old))
+	e.putObjectOnRowStartingAtColumn(row, col, updater(old))
 }
 
-func (e *explorer) objectAtPut(row, col int, access objectAccess) {
+func (e *explorer) putObjectOnRowStartingAtColumn(row, col int, access objectAccess) {
 	r, ok := e.accessMap[row]
 	if !ok {
 		r = map[int]objectAccess{}
@@ -127,35 +127,63 @@ func (e *explorer) objectAtPut(row, col int, access objectAccess) {
 		return
 	}
 	// cell is taken
-	e.objectAtPut(row, e.maxColumn(row)+1, access)
+	e.putObjectOnRowStartingAtColumn(row, e.maxColumn(row)+1, access)
 }
 
 func (e *explorer) buildIndexData(b *indexDataBuilder) indexData {
 	for row, each := range e.accessMap {
 		for col, access := range each {
-			b.build(row, col, access)
+			info := b.build(row, col, access)
+			if info.entriesCount == 0 && info.hasZeros {
+				// toggle zero to have entries
+				e.updateObjectAt(row, col, func(access objectAccess) objectAccess {
+					access.hideZeros = false
+					return access
+				})
+				// rebuild
+				b.build(row, col, e.objectAt(row, col))
+			}
 		}
 	}
 	return b.data
 }
 
+func (e *explorer) removeNonRootObjects() {
+	newMap := map[int]map[int]objectAccess{}
+	for row, each := range e.accessMap {
+		for col, access := range each {
+			if access.isRoot {
+				rowMap, ok := newMap[row]
+				if !ok {
+					rowMap = map[int]objectAccess{}
+					newMap[row] = rowMap
+				}
+				rowMap[col] = access
+			}
+		}
+	}
+	// swap
+	e.accessMap = newMap
+}
+
 func canExplore(v any) bool {
 	rt := reflect.TypeOf(v)
+	rv := reflect.ValueOf(v)
 	if rt.Kind() == reflect.Interface || rt.Kind() == reflect.Pointer {
-		rv := reflect.ValueOf(v)
 		if rv.IsZero() {
 			return false
 		}
 		rt = rt.Elem()
+		rv = rv.Elem()
 	}
 	if rt.Kind() == reflect.Struct {
 		return true
 	}
 	if rt.Kind() == reflect.Slice {
-		return true
+		return rv.Len() > 0
 	}
 	if rt.Kind() == reflect.Map {
-		return true
+		return rv.Len() > 0
 	}
 	if rt.Kind() == reflect.Array {
 		return true

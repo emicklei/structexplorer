@@ -38,12 +38,14 @@ or as a HTTP Handler function:
 
 ## buttons
 
-- ⇊ : explore one or more selected values from the list and put them below
+- ⇊ : explore one or more selected values from the list and put them on the row below
 - ⇉ : explore one or more selected values from the list and put them on the right
+- ⇈ : explore one or more selected values from the list and put them on the row up
 - z : show or hide fields which currently have zero value ("",0,nil,false)
 - x : remove the struct from the page
+- c : remove all struct from the page except the onces you started with
 
-Note: if the list contains just one structural value then selecting it can be skipped for both ⇊ and ⇉.
+Note: if the list contains just one structural value then selecting it can be skipped for ⇊, ⇈ and ⇉.
 
 ## explore while debugging
 

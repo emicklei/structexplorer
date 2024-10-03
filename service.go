@@ -138,7 +138,7 @@ func (s *service) Explore(label string, value any) Service {
 		slog.Info("value can not be explored", "value", value)
 		return s
 	}
-	s.explorer.objectAtPut(0, 0, objectAccess{
+	s.explorer.putObjectOnRowStartingAtColumn(0, 0, objectAccess{
 		isRoot:    true,
 		object:    value,
 		path:      []string{""},
@@ -190,6 +190,12 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 		toRow++
 	case "right":
 		toColumn++
+	case "up":
+		toRow--
+		// on the first row?
+		if toRow == -1 {
+			toRow = 0
+		}
 	case "remove":
 		if s.explorer.canRemoveObjectAt(cmd.Row, cmd.Column) {
 			s.explorer.removeObjectAt(cmd.Row, cmd.Column)
@@ -202,6 +208,9 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 			access.hideZeros = !access.hideZeros
 			return access
 		})
+		return
+	case "clear":
+		s.explorer.removeNonRootObjects()
 		return
 	default:
 		slog.Warn("[structexplorer] invalid direction", "action", cmd.Action)
@@ -231,6 +240,6 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		oa.typeName = fmt.Sprintf("%T", v)
-		s.explorer.objectAtPut(toRow, toColumn, oa)
+		s.explorer.putObjectOnRowStartingAtColumn(toRow, toColumn, oa)
 	}
 }

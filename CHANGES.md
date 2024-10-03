@@ -1,3 +1,9 @@
+### v0.5.0
+
+- add "c" (clear) button for not-root removals
+- add "⇈" for placing object on the row above
+- fixed exploring empty slice and map
+
 ### v0.4.2
 
 - fix fixed sized integer keys in maps

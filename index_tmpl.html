@@ -19,12 +19,15 @@
     </script>
     {{- if not .NotLive }}
         <div class="buttonbar">
-            <button class="btn" title="explore all selected in rows below" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'down');">&ddarr;</button>
+            <button class="btn" title="explore all selected in the row below" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'down');">&ddarr;</button>
             <button class="btn" title="explore all selected in columns on the right" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'right');">&rrarr;</button>
+            <button class="btn" title="explore all selected in the row above" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'up');">&uuarr;</button>
             {{- if .HasZeros }}
                 <button class="btn" title="hide or show fields with zero values" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'toggleZeros');">z</button>
             {{- end}}
-            {{- if not .IsRoot }}
+            {{- if .IsRoot }}
+                <button class="btn" title="remove all objects except the roots" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'clear');">c</button>
+            {{- else }}
                 <button class="btn" title="remove the object from this page" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'remove');">x</button>
             {{- end }}
         </div>

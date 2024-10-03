@@ -16,6 +16,22 @@ func TestExplorer(t *testing.T) {
 	}
 }
 
+func TestExplorerClear(t *testing.T) {
+	x := newExplorerOnAll("indexData", indexData{})
+	x.removeNonRootObjects()
+	if got, want := len(x.accessMap), 1; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+	x.putObjectOnRowStartingAtColumn(1, 1, objectAccess{})
+	if got, want := len(x.accessMap), 2; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+	x.removeNonRootObjects()
+	if got, want := len(x.accessMap), 1; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+}
+
 func TestExplorerNotExplorable(t *testing.T) {
 	x := newExplorerOnAll("test", 42)
 	o1 := x.objectAt(0, 0)
@@ -36,7 +52,7 @@ func TestExplorerTable(t *testing.T) {
 		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
 	}
 	o2 := objectAccess{object: 1}
-	x.objectAtPut(1, 1, o2)
+	x.putObjectOnRowStartingAtColumn(1, 1, o2)
 	o3 := x.objectAt(1, 1)
 	if o2.object != o3.object {
 		t.Fail()
@@ -54,6 +70,9 @@ func TestExplorerTable(t *testing.T) {
 }
 
 func TestCanExplore(t *testing.T) {
+	intSlice := []int{}
+	arr := [2]int{}
+	smp := map[string]bool{}
 	var varTime *time.Time
 	cases := []struct {
 		label string
@@ -73,17 +92,38 @@ func TestCanExplore(t *testing.T) {
 		{
 			label: "slice",
 			value: []int{},
+			itcan: false,
+		},
+		{
+			label: "slice",
+			value: []int{1},
 			itcan: true,
+		},
+		{
+			label: "ptr-slice",
+			value: &intSlice,
+			itcan: false,
 		},
 		{
 			label: "array",
-			value: [2]int{},
+			value: arr,
 			itcan: true,
 		},
 		{
-			label: "map",
-			value: map[int]string{},
+			label: "ptr-array",
+			value: &arr,
 			itcan: true,
+		},
+
+		{
+			label: "map",
+			value: smp,
+			itcan: false,
+		},
+		{
+			label: "ptr-map",
+			value: &smp,
+			itcan: false,
 		},
 	}
 	for _, each := range cases {
