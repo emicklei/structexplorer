@@ -68,7 +68,8 @@ type Service interface {
 	// Dump writes an HTML file for displaying the current state of the explorer and its entries.
 	Dump()
 	// Explore adds a new entry (next available row in column 0) for a value unless it cannot be explored.
-	Explore(label string, value any) Service
+	Explore(label string, value any, options ...ExploreOption) Service
+	Follow(path string, options ...FollowOption) Service
 }
 
 // NewService creates a new to explore one or more values (structures).
@@ -131,7 +132,7 @@ func (s *service) serveIndex(w http.ResponseWriter, _ *http.Request) {
 }
 
 // Explore adds a new entry (next available row in column 0) for a value if it can be explored.
-func (s *service) Explore(label string, value any) Service {
+func (s *service) Explore(label string, value any, options ...ExploreOption) Service {
 	defer s.protect()()
 
 	if !canExplore(value) {
@@ -164,6 +165,8 @@ func (s *service) Dump() {
 		slog.Error("failed to execute template", "err", err)
 	}
 }
+
+func (s *service) Follow(path string, options ...FollowOption) Service { return s }
 
 type uiInstruction struct {
 	Row        int      `json:"row"`
