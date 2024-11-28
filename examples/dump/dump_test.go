@@ -20,7 +20,7 @@ func TestWatch(t *testing.T) {
 	o.val = "brush"
 
 	o2 := &thing{val: "blue"}
-	svc.Explore("thing2", o2).Dump()
+	svc.Explore("thing2", o2, structexplorer.SameColumnDown).Dump()
 
 	o.val = "belt"
 

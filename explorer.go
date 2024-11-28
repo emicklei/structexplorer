@@ -26,9 +26,9 @@ func (o objectAccess) isEmpty() bool {
 }
 
 type explorer struct {
-	mutex     *sync.Mutex // to protect concurrent access to the map
-	accessMap map[int]map[int]objectAccess
-	options   *Options // some properties can be modified by user
+	mutex     *sync.Mutex                  // to protect concurrent access to the map
+	accessMap map[int]map[int]objectAccess // row -> column -> objectAccess
+	options   *Options                     // some properties can be modified by user
 }
 
 func (e *explorer) maxColumn(row int) int {
@@ -43,6 +43,18 @@ func (e *explorer) maxColumn(row int) int {
 		}
 	}
 	return max
+}
+
+func (e *explorer) maxRow(column int) int {
+	for row, cols := range e.accessMap {
+		_, ok := cols[column]
+		if ok {
+			// cell taken
+		} else {
+			return row
+		}
+	}
+	return 0
 }
 
 func (e *explorer) rootKeys() (list []string) {

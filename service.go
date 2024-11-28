@@ -139,14 +139,22 @@ func (s *service) Explore(label string, value any, options ...ExploreOption) Ser
 		slog.Info("value can not be explored", "value", value)
 		return s
 	}
-	s.explorer.putObjectOnRowStartingAtColumn(0, 0, objectAccess{
+	oa := objectAccess{
 		isRoot:    true,
 		object:    value,
 		path:      []string{""},
 		label:     label,
 		hideZeros: true,
 		typeName:  fmt.Sprintf("%T", value),
-	})
+	}
+
+	if len(options) > 0 {
+		r, c := options[0].placement(s.explorer, 0, 0)
+		s.explorer.accessMap[r][c] = oa
+		return s
+	}
+
+	s.explorer.putObjectOnRowStartingAtColumn(0, 0, oa)
 	return s
 }
 
