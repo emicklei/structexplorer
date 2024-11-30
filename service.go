@@ -69,7 +69,7 @@ type Service interface {
 	Dump()
 	// Explore adds a new entry (next available row in column 0) for a value unless it cannot be explored.
 	Explore(label string, value any, options ...ExploreOption) Service
-	Follow(path string, options ...FollowOption) Service
+	Follow(path string) Service
 }
 
 // NewService creates a new to explore one or more values (structures).
@@ -174,8 +174,6 @@ func (s *service) Dump() {
 	}
 }
 
-func (s *service) Follow(path string, options ...FollowOption) Service { return s }
-
 type uiInstruction struct {
 	Row        int      `json:"row"`
 	Column     int      `json:"column"`
@@ -253,4 +251,20 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 		oa.typeName = fmt.Sprintf("%T", v)
 		s.explorer.putObjectOnRowStartingAtColumn(toRow, toColumn, oa)
 	}
+}
+
+func (s *service) Follow(newPath string) Service {
+
+	fromAccess := s.explorer.objectAt(0, 0)
+
+	oa := objectAccess{
+		object:    fromAccess.object,
+		path:      strings.Split(newPath, "."),
+		label:     newPath,
+		hideZeros: true,
+	}
+
+	s.explorer.putObjectOnRowStartingAtColumn(0, 0, oa)
+
+	return s
 }

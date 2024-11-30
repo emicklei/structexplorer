@@ -5,8 +5,8 @@ import (
 )
 
 func main() {
-	m := map[string]any{}
+	m := map[string]any{"service": nil}
 	s := structexplorer.NewService("explorer", m)
-	m["value"] = s
+	m["service"] = s
 	s.Start()
 }
