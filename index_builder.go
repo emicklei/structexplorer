@@ -41,7 +41,8 @@ func (b *indexDataBuilder) build(row, column int, access objectAccess) cellInfo 
 	// copy fields into entries
 	hasZeros := false
 	entries := []fieldEntry{}
-	for _, each := range newFields(access.Value()) {
+	currentValue := access.Value()
+	for _, each := range newFields(currentValue) {
 		valString := safeComputeValueString(each)
 		if isZeroPrintstring(valString) {
 			hasZeros = true
@@ -73,13 +74,18 @@ func (b *indexDataBuilder) build(row, column int, access objectAccess) cellInfo 
 		fieldListLabel += strings.Repeat("&nbsp;", size-len(access.label))
 	}
 	newSelectID := fmt.Sprintf("id%d", b.seq)
+	typ := access.typeName
+	if typ == "" {
+		// when using Follow, the type is not set/known
+		typ = fmt.Sprintf("%T", currentValue)
+	}
 	b.data.Rows[row].Cells[column] = fieldList{
 		Row:        row,
 		Column:     column,
 		Path:       strings.Join(access.path, "."),
 		Label:      template.HTML(fieldListLabel),
 		Fields:     entries,
-		Type:       access.typeName,
+		Type:       typ,
 		IsRoot:     access.isRoot,
 		HasZeros:   hasZeros,
 		SelectSize: len(entries),

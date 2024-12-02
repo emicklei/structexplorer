@@ -69,7 +69,7 @@ type Service interface {
 	Dump()
 	// Explore adds a new entry (next available row in column 0) for a value unless it cannot be explored.
 	Explore(label string, value any, options ...ExploreOption) Service
-	Follow(path string) Service
+	Follow(path string, options ...ExploreOption) Service
 }
 
 // NewService creates a new to explore one or more values (structures).
@@ -253,7 +253,7 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *service) Follow(newPath string) Service {
+func (s *service) Follow(newPath string, options ...ExploreOption) Service {
 	pathTokens := strings.Split(newPath, ".")
 	if len(pathTokens) == 0 {
 		return s
@@ -261,7 +261,7 @@ func (s *service) Follow(newPath string) Service {
 	// find root
 	root, row, col, ok := s.explorer.rootAccessWithLabel(pathTokens[0])
 	if !ok {
-		slog.Warn("[structexplorer] root not found", "root", pathTokens[0])
+		slog.Warn("[structexplorer] object not found", "label", pathTokens[0])
 		return s
 	}
 	oa := objectAccess{

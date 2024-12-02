@@ -25,6 +25,7 @@ func TestWatch(t *testing.T) {
 
 	svc.Follow("thing.arr")
 	svc.Follow("thing2.arr")
+	svc.Follow("thing2.non-existing")
 	svc.Dump()
 
 	// modify after svc creation
