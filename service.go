@@ -270,8 +270,11 @@ func (s *service) Follow(newPath string, options ...ExploreOption) Service {
 		label:     newPath,
 		hideZeros: true,
 	}
-
+	// check option
+	if len(options) > 0 {
+		r, c := options[0].placement(s.explorer, row, col)
+		row, col = r, c
+	}
 	s.explorer.putObjectOnRowStartingAtColumn(row, col, oa)
-
 	return s
 }

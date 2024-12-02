@@ -23,7 +23,7 @@ func TestWatch(t *testing.T) {
 	o2 := &thing{val: "blue"}
 	svc.Explore("thing2", o2)
 
-	svc.Follow("thing.arr")
+	svc.Follow("thing.arr", structexplorer.RowColumn(2, 2))
 	svc.Follow("thing2.arr")
 	svc.Follow("thing2.non-existing")
 	svc.Dump()
