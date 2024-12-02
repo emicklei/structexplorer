@@ -66,6 +66,17 @@ func (e *explorer) rootKeys() (list []string) {
 	return
 }
 
+func (e *explorer) rootAccessWithLabel(label string) (oa objectAccess, row int, col int, ok bool) {
+	for row, rows := range e.accessMap {
+		for col, each := range rows {
+			if each.isRoot && each.label == label {
+				return each, row, col, true
+			}
+		}
+	}
+	return objectAccess{}, 0, 0, false
+}
+
 func newExplorerOnAll(labelValuePairs ...any) *explorer {
 	s := &explorer{
 		accessMap: map[int]map[int]objectAccess{},

@@ -23,8 +23,8 @@ func TestWatch(t *testing.T) {
 	o2 := &thing{val: "blue"}
 	svc.Explore("thing2", o2)
 
-	svc.Follow("thing.val")
-	svc.Follow("thing.arr.1")
+	svc.Follow("thing.arr")
+	svc.Follow("thing2.arr")
 	svc.Dump()
 
 	// modify after svc creation

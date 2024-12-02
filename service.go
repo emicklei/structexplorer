@@ -254,17 +254,24 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *service) Follow(newPath string) Service {
-
-	fromAccess := s.explorer.objectAt(0, 0)
-
+	pathTokens := strings.Split(newPath, ".")
+	if len(pathTokens) == 0 {
+		return s
+	}
+	// find root
+	root, row, col, ok := s.explorer.rootAccessWithLabel(pathTokens[0])
+	if !ok {
+		slog.Warn("[structexplorer] root not found", "root", pathTokens[0])
+		return s
+	}
 	oa := objectAccess{
-		object:    fromAccess.object,
-		path:      strings.Split(newPath, "."),
+		object:    root.object,
+		path:      pathTokens[1:],
 		label:     newPath,
 		hideZeros: true,
 	}
 
-	s.explorer.putObjectOnRowStartingAtColumn(0, 0, oa)
+	s.explorer.putObjectOnRowStartingAtColumn(row, col, oa)
 
 	return s
 }

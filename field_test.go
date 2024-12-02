@@ -37,6 +37,14 @@ func Test_valueAtAccessPathFloat64(t *testing.T) {
 	}
 }
 
+func Test_valueAtAccessPathSliceIndex(t *testing.T) {
+	v := struct{ a []int }{[]int{1}}
+	w := valueAtAccessPath(v, []string{"a", "0"})
+	if got, want := w, 1; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+}
+
 type object struct {
 	i  int
 	pi *int
