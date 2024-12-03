@@ -17,10 +17,14 @@ type Service interface {
 	http.Handler
 	// Start accepts 0 or 1 Options
 	Start(opts ...Options)
+
 	// Dump writes an HTML file for displaying the current state of the explorer and its entries.
 	Dump()
+
 	// Explore adds a new entry (next available row in column 0) for a value unless it cannot be explored.
 	Explore(label string, value any, options ...ExploreOption) Service
+
+	// Follow adds a new entry for a value at the specified path unless it cannot be explored.
 	Follow(path string, options ...ExploreOption) Service
 }
 
