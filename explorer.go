@@ -102,7 +102,7 @@ func newExplorerOnAll(labelValuePairs ...any) *explorer {
 			label:     label,
 			hideZeros: true,
 			typeName:  fmt.Sprintf("%T", value),
-		})
+		}, SameRow())
 		row++
 	}
 	return s
@@ -135,10 +135,10 @@ func (e *explorer) removeObjectAt(row, col int) {
 func (e *explorer) updateObjectAt(row, col int, updater func(access objectAccess) objectAccess) {
 	old := e.objectAt(row, col)
 	e.removeObjectAt(row, col)
-	e.putObjectOnRowStartingAtColumn(row, col, updater(old))
+	e.putObjectOnRowStartingAtColumn(row, col, updater(old), SameRow())
 }
 
-func (e *explorer) putObjectOnRowStartingAtColumn(row, col int, access objectAccess) {
+func (e *explorer) putObjectOnRowStartingAtColumn(row, col int, access objectAccess, option ExploreOption) {
 	r, ok := e.accessMap[row]
 	if !ok {
 		r = map[int]objectAccess{}
@@ -149,8 +149,9 @@ func (e *explorer) putObjectOnRowStartingAtColumn(row, col int, access objectAcc
 		r[col] = access
 		return
 	}
-	// cell is taken
-	e.putObjectOnRowStartingAtColumn(row, e.maxColumn(row)+1, access)
+	// cell is taken, use option to find a new location
+	newRow, newCol := option.placement(e, row, col)
+	e.putObjectOnRowStartingAtColumn(newRow, newCol, access, option)
 }
 
 func (e *explorer) buildIndexData(b *indexDataBuilder) indexData {

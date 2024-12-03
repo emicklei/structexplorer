@@ -12,6 +12,18 @@ import (
 	"strings"
 )
 
+// Service is an HTTP Handler to explore one or more values (structures).
+type Service interface {
+	http.Handler
+	// Start accepts 0 or 1 Options
+	Start(opts ...Options)
+	// Dump writes an HTML file for displaying the current state of the explorer and its entries.
+	Dump()
+	// Explore adds a new entry (next available row in column 0) for a value unless it cannot be explored.
+	Explore(label string, value any, options ...ExploreOption) Service
+	Follow(path string, options ...ExploreOption) Service
+}
+
 //go:embed index_tmpl.html
 var indexHTML string
 
@@ -24,52 +36,9 @@ func (s *service) init() {
 	s.indexTemplate = tmpl
 }
 
-// Options can be used to configure a Service on startup.
-type Options struct {
-	// Uses 5656 as the default
-	HTTPPort int
-	// Uses http.DefaultServeMux as default
-	ServeMux *http.ServeMux
-	// Uses "/" as default
-	HTTPBasePath string
-}
-
-func (o *Options) rootPath() string {
-	if o.HTTPBasePath == "" {
-		return "/"
-	}
-	return path.Join("/", o.HTTPBasePath)
-}
-
-func (o *Options) httpPort() int {
-	if o.HTTPPort == 0 {
-		return 5656
-	}
-	return o.HTTPPort
-}
-
-func (o *Options) serveMux() *http.ServeMux {
-	if o.ServeMux == nil {
-		return http.DefaultServeMux
-	}
-	return o.ServeMux
-}
-
 type service struct {
 	explorer      *explorer
 	indexTemplate *template.Template
-}
-
-// Service is an HTTP Handler to explore one or more values (structures).
-type Service interface {
-	http.Handler
-	// Start accepts 0 or 1 Options
-	Start(opts ...Options)
-	// Dump writes an HTML file for displaying the current state of the explorer and its entries.
-	Dump()
-	// Explore adds a new entry (next available row in column 0) for a value unless it cannot be explored.
-	Explore(label string, value any, options ...ExploreOption) Service
-	Follow(path string, options ...ExploreOption) Service
 }
 
 // NewService creates a new to explore one or more values (structures).
@@ -135,6 +104,8 @@ func (s *service) serveIndex(w http.ResponseWriter, _ *http.Request) {
 func (s *service) Explore(label string, value any, options ...ExploreOption) Service {
 	defer s.protect()()
 
+	row, column := 0, 0
+
 	if !canExplore(value) {
 		slog.Info("value can not be explored", "value", value)
 		return s
@@ -148,13 +119,11 @@ func (s *service) Explore(label string, value any, options ...ExploreOption) Ser
 		typeName:  fmt.Sprintf("%T", value),
 	}
 
+	placement := SameRow()
 	if len(options) > 0 {
-		r, c := options[0].placement(s.explorer, 0, 0)
-		s.explorer.accessMap[r][c] = oa
-		return s
+		placement = options[0]
 	}
-
-	s.explorer.putObjectOnRowStartingAtColumn(0, 0, oa)
+	s.explorer.putObjectOnRowStartingAtColumn(row, column, oa, placement)
 	return s
 }
 
@@ -249,7 +218,7 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		oa.typeName = fmt.Sprintf("%T", v)
-		s.explorer.putObjectOnRowStartingAtColumn(toRow, toColumn, oa)
+		s.explorer.putObjectOnRowStartingAtColumn(toRow, toColumn, oa, SameRow())
 	}
 }
 
@@ -270,11 +239,10 @@ func (s *service) Follow(newPath string, options ...ExploreOption) Service {
 		label:     newPath,
 		hideZeros: true,
 	}
-	// check option
+	placement := SameRow()
 	if len(options) > 0 {
-		r, c := options[0].placement(s.explorer, row, col)
-		row, col = r, c
+		placement = options[0]
 	}
-	s.explorer.putObjectOnRowStartingAtColumn(row, col, oa)
+	s.explorer.putObjectOnRowStartingAtColumn(row, col, oa, placement)
 	return s
 }
