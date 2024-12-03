@@ -84,35 +84,35 @@ func (f fieldAccess) value() any {
 		case reflect.Int:
 			i, _ := strconv.Atoi(f.key)
 			mv := rv.MapIndex(reflect.ValueOf(i))
-			if mv.IsZero() {
+			if mv.IsZero() || !mv.CanInterface() {
 				return nil
 			}
 			return mv.Interface()
 		case reflect.Int8:
 			i, _ := strconv.ParseInt(f.key, 10, 8)
 			mv := rv.MapIndex(reflect.ValueOf(int8(i)))
-			if mv.IsZero() {
+			if mv.IsZero() || !mv.CanInterface() {
 				return nil
 			}
 			return mv.Interface()
 		case reflect.Int16:
 			i, _ := strconv.ParseInt(f.key, 10, 16)
 			mv := rv.MapIndex(reflect.ValueOf(int16(i)))
-			if mv.IsZero() {
+			if mv.IsZero() || !mv.CanInterface() {
 				return nil
 			}
 			return mv.Interface()
 		case reflect.Int32:
 			i, _ := strconv.ParseInt(f.key, 10, 32)
 			mv := rv.MapIndex(reflect.ValueOf(int32(i)))
-			if mv.IsZero() {
+			if mv.IsZero() || !mv.CanInterface() {
 				return nil
 			}
 			return mv.Interface()
 		case reflect.Int64:
 			i, _ := strconv.ParseInt(f.key, 10, 64)
 			mv := rv.MapIndex(reflect.ValueOf(i))
-			if mv.IsZero() {
+			if mv.IsZero() || !mv.CanInterface() {
 				return nil
 			}
 			return mv.Interface()
@@ -122,7 +122,7 @@ func (f fieldAccess) value() any {
 		case reflect.Uint8:
 			i, _ := strconv.ParseUint(f.key, 10, 8)
 			mv := rv.MapIndex(reflect.ValueOf(uint8(i)))
-			if mv.IsZero() {
+			if mv.IsZero() || !mv.CanInterface() {
 				return nil
 			}
 			return mv.Interface()
@@ -136,14 +136,14 @@ func (f fieldAccess) value() any {
 		case reflect.Uint32:
 			i, _ := strconv.ParseUint(f.key, 10, 32)
 			mv := rv.MapIndex(reflect.ValueOf(uint32(i)))
-			if mv.IsZero() {
+			if mv.IsZero() || !mv.CanInterface() {
 				return nil
 			}
 			return mv.Interface()
 		case reflect.Uint64:
 			i, _ := strconv.ParseUint(f.key, 10, 64)
 			mv := rv.MapIndex(reflect.ValueOf(uint64(i)))
-			if mv.IsZero() {
+			if mv.IsZero() || !mv.CanInterface() {
 				return nil
 			}
 			return mv.Interface()
@@ -151,7 +151,7 @@ func (f fieldAccess) value() any {
 		// fallback: name is hash of key
 		key := stringToReflectMapKey(f.key, rv)
 		mv := rv.MapIndex(key)
-		if mv.IsZero() {
+		if mv.IsZero() || !mv.CanInterface() {
 			return nil
 		}
 		return mv.Interface()
