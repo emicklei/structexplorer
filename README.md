@@ -55,7 +55,9 @@ This means that if you have started the `structexplorer` service in your program
 The explorer can also be asked to dump an HTML page with the current state of values to a file.
 
     s := structexplorer.NewService()
-    s.Explore("some structure", yourStruct, "some field", yourStruct.Field).Dump()
+    s.Explore("yours", yourStruct)
+    s.Follow("yours.field")
+    s.Dump()
 
 Another method is to use a special test case which starts an explorer at the end of a test and then run it with a longer acceptable timeout.
 

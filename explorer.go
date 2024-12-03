@@ -31,7 +31,7 @@ type explorer struct {
 	options   *Options                     // some properties can be modified by user
 }
 
-func (e *explorer) maxColumn(row int) int {
+func (e *explorer) nextFreeColumn(row int) int {
 	max := 0
 	cols, ok := e.accessMap[row]
 	if !ok {
@@ -45,7 +45,7 @@ func (e *explorer) maxColumn(row int) int {
 	return max
 }
 
-func (e *explorer) maxRow(column int) int {
+func (e *explorer) nextFreeRow(column int) int {
 	for row, cols := range e.accessMap {
 		_, ok := cols[column]
 		if ok {
@@ -95,14 +95,14 @@ func newExplorerOnAll(labelValuePairs ...any) *explorer {
 			slog.Info("value can not be explored", "value", value)
 			continue
 		}
-		s.putObjectOnRowStartingAtColumn(row, 0, objectAccess{
+		s.putObjectStartingAt(row, 0, objectAccess{
 			isRoot:    true,
 			object:    value,
 			path:      []string{""},
 			label:     label,
 			hideZeros: true,
 			typeName:  fmt.Sprintf("%T", value),
-		}, SameRow())
+		}, OnRow(row))
 		row++
 	}
 	return s
@@ -135,10 +135,10 @@ func (e *explorer) removeObjectAt(row, col int) {
 func (e *explorer) updateObjectAt(row, col int, updater func(access objectAccess) objectAccess) {
 	old := e.objectAt(row, col)
 	e.removeObjectAt(row, col)
-	e.putObjectOnRowStartingAtColumn(row, col, updater(old), SameRow())
+	e.putObjectStartingAt(row, col, updater(old), OnRow(row))
 }
 
-func (e *explorer) putObjectOnRowStartingAtColumn(row, col int, access objectAccess, option ExploreOption) {
+func (e *explorer) putObjectStartingAt(row, col int, access objectAccess, option ExploreOption) {
 	r, ok := e.accessMap[row]
 	if !ok {
 		r = map[int]objectAccess{}
@@ -150,8 +150,8 @@ func (e *explorer) putObjectOnRowStartingAtColumn(row, col int, access objectAcc
 		return
 	}
 	// cell is taken, use option to find a new location
-	newRow, newCol := option.placement(e, row, col)
-	e.putObjectOnRowStartingAtColumn(newRow, newCol, access, option)
+	newRow, newCol := option.placement(e)
+	e.putObjectStartingAt(newRow, newCol, access, option)
 }
 
 func (e *explorer) buildIndexData(b *indexDataBuilder) indexData {

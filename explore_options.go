@@ -1,6 +1,6 @@
 package structexplorer
 
-type placementFunc func(e *explorer, row, column int) (newRow, newColumn int)
+type placementFunc func(e *explorer) (newRow, newColumn int)
 
 type ExploreOption struct {
 	placement placementFunc
@@ -8,26 +8,26 @@ type ExploreOption struct {
 
 func RowColumn(row, column int) ExploreOption {
 	return ExploreOption{
-		placement: func(e *explorer, r, c int) (newRow, newColumn int) {
+		placement: func(e *explorer) (newRow, newColumn int) {
 			return row, column
 		},
 	}
 }
 
-// SameColumn places the next object in the same column on a new free row.
-func SameColumn() ExploreOption {
+// OnColumn places the next object in the same column on a new free row.
+func OnColumn(column int) ExploreOption {
 	return ExploreOption{
-		placement: func(e *explorer, r, c int) (newRow, newColumn int) {
-			return e.maxRow(c) + 1, c
+		placement: func(e *explorer) (newRow, newColumn int) {
+			return e.nextFreeRow(column) + 1, column
 		},
 	}
 }
 
-// SameRow places the next object in the same row on a new free column.
-func SameRow() ExploreOption {
+// OnRow places the next object in the same row on a new free column.
+func OnRow(row int) ExploreOption {
 	return ExploreOption{
-		placement: func(e *explorer, r, c int) (newRow, newColumn int) {
-			return r, e.maxColumn(r) + 1
+		placement: func(e *explorer) (newRow, newColumn int) {
+			return row, e.nextFreeColumn(row) + 1
 		},
 	}
 }

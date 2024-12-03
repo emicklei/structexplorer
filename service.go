@@ -105,7 +105,11 @@ func (s *service) Explore(label string, value any, options ...ExploreOption) Ser
 	defer s.protect()()
 
 	row, column := 0, 0
-
+	placement := OnRow(row)
+	if len(options) > 0 {
+		placement = options[0]
+		row, column = options[0].placement(s.explorer)
+	}
 	if !canExplore(value) {
 		slog.Info("value can not be explored", "value", value)
 		return s
@@ -119,11 +123,7 @@ func (s *service) Explore(label string, value any, options ...ExploreOption) Ser
 		typeName:  fmt.Sprintf("%T", value),
 	}
 
-	placement := SameRow()
-	if len(options) > 0 {
-		placement = options[0]
-	}
-	s.explorer.putObjectOnRowStartingAtColumn(row, column, oa, placement)
+	s.explorer.putObjectStartingAt(row, column, oa, placement)
 	return s
 }
 
@@ -213,20 +213,20 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 			// other keys
 			v = oa.Value()
 			if !canExplore(v) {
-				slog.Warn("[structexplorer] cannot explore this", "value", v, "type", fmt.Sprintf("%T", v))
+				slog.Warn("[structexplorer] cannot explore this", "value", v, "path", oa.label, "type", fmt.Sprintf("%T", v))
 				continue
 			}
 		}
 		oa.typeName = fmt.Sprintf("%T", v)
-		s.explorer.putObjectOnRowStartingAtColumn(toRow, toColumn, oa, SameRow())
+		s.explorer.putObjectStartingAt(toRow, toColumn, oa, OnRow(toRow))
 	}
 }
 
 func (s *service) Follow(newPath string, options ...ExploreOption) Service {
-	pathTokens := strings.Split(newPath, ".")
-	if len(pathTokens) == 0 {
+	if newPath == "" {
 		return s
 	}
+	pathTokens := strings.Split(newPath, ".")
 	// find root
 	root, row, col, ok := s.explorer.rootAccessWithLabel(pathTokens[0])
 	if !ok {
@@ -239,10 +239,10 @@ func (s *service) Follow(newPath string, options ...ExploreOption) Service {
 		label:     newPath,
 		hideZeros: true,
 	}
-	placement := SameRow()
+	placement := OnRow(row)
 	if len(options) > 0 {
 		placement = options[0]
 	}
-	s.explorer.putObjectOnRowStartingAtColumn(row, col, oa, placement)
+	s.explorer.putObjectStartingAt(row, col, oa, placement)
 	return s
 }

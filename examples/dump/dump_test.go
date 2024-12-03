@@ -25,7 +25,7 @@ func TestWatch(t *testing.T) {
 	svc.Explore("thing2", o2) // without option starts at 0,0
 
 	svc.Follow("thing.arr", structexplorer.RowColumn(2, 2))
-	svc.Follow("thing2.arr", structexplorer.SameColumn())
+	svc.Follow("thing2.arr", structexplorer.OnColumn(1))
 
 	svc.Follow("thing2.non-existing")
 	svc.Dump()
