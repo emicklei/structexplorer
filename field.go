@@ -83,38 +83,78 @@ func (f fieldAccess) value() any {
 		switch keyType.Kind() {
 		case reflect.Int:
 			i, _ := strconv.Atoi(f.key)
-			return rv.MapIndex(reflect.ValueOf(i)).Interface()
+			mv := rv.MapIndex(reflect.ValueOf(i))
+			if mv.IsZero() || !mv.CanInterface() {
+				return nil
+			}
+			return mv.Interface()
 		case reflect.Int8:
 			i, _ := strconv.ParseInt(f.key, 10, 8)
-			return rv.MapIndex(reflect.ValueOf(int8(i))).Interface()
+			mv := rv.MapIndex(reflect.ValueOf(int8(i)))
+			if mv.IsZero() || !mv.CanInterface() {
+				return nil
+			}
+			return mv.Interface()
 		case reflect.Int16:
 			i, _ := strconv.ParseInt(f.key, 10, 16)
-			return rv.MapIndex(reflect.ValueOf(int16(i))).Interface()
+			mv := rv.MapIndex(reflect.ValueOf(int16(i)))
+			if mv.IsZero() || !mv.CanInterface() {
+				return nil
+			}
+			return mv.Interface()
 		case reflect.Int32:
 			i, _ := strconv.ParseInt(f.key, 10, 32)
-			return rv.MapIndex(reflect.ValueOf(int32(i))).Interface()
+			mv := rv.MapIndex(reflect.ValueOf(int32(i)))
+			if mv.IsZero() || !mv.CanInterface() {
+				return nil
+			}
+			return mv.Interface()
 		case reflect.Int64:
 			i, _ := strconv.ParseInt(f.key, 10, 64)
-			return rv.MapIndex(reflect.ValueOf(i)).Interface()
+			mv := rv.MapIndex(reflect.ValueOf(i))
+			if mv.IsZero() || !mv.CanInterface() {
+				return nil
+			}
+			return mv.Interface()
 		case reflect.Uint:
 			i, _ := strconv.ParseUint(f.key, 10, 0)
 			return rv.MapIndex(reflect.ValueOf(uint(i))).Interface()
 		case reflect.Uint8:
 			i, _ := strconv.ParseUint(f.key, 10, 8)
-			return rv.MapIndex(reflect.ValueOf(uint8(i))).Interface()
+			mv := rv.MapIndex(reflect.ValueOf(uint8(i)))
+			if mv.IsZero() || !mv.CanInterface() {
+				return nil
+			}
+			return mv.Interface()
 		case reflect.Uint16:
 			i, _ := strconv.ParseUint(f.key, 10, 16)
-			return rv.MapIndex(reflect.ValueOf(uint16(i))).Interface()
+			mv := rv.MapIndex(reflect.ValueOf(uint16(i)))
+			if mv.IsZero() {
+				return nil
+			}
+			return mv.Interface()
 		case reflect.Uint32:
 			i, _ := strconv.ParseUint(f.key, 10, 32)
-			return rv.MapIndex(reflect.ValueOf(uint32(i))).Interface()
+			mv := rv.MapIndex(reflect.ValueOf(uint32(i)))
+			if mv.IsZero() || !mv.CanInterface() {
+				return nil
+			}
+			return mv.Interface()
 		case reflect.Uint64:
 			i, _ := strconv.ParseUint(f.key, 10, 64)
-			return rv.MapIndex(reflect.ValueOf(uint64(i))).Interface()
+			mv := rv.MapIndex(reflect.ValueOf(uint64(i)))
+			if mv.IsZero() || !mv.CanInterface() {
+				return nil
+			}
+			return mv.Interface()
 		}
 		// fallback: name is hash of key
 		key := stringToReflectMapKey(f.key, rv)
-		return rv.MapIndex(key).Interface()
+		mv := rv.MapIndex(key)
+		if mv.IsZero() || !mv.CanInterface() {
+			return nil
+		}
+		return mv.Interface()
 	}
 	if rv.Type().Kind() == reflect.Struct {
 		// name is field

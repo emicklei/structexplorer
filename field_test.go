@@ -37,6 +37,14 @@ func Test_valueAtAccessPathFloat64(t *testing.T) {
 	}
 }
 
+func Test_valueAtAccessPathSliceIndex(t *testing.T) {
+	v := struct{ a []int }{[]int{1}}
+	w := valueAtAccessPath(v, []string{"a", "0"})
+	if got, want := w, 1; got != want {
+		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
+	}
+}
+
 type object struct {
 	i  int
 	pi *int
@@ -421,5 +429,48 @@ func TestStringSliceWithEmpty(t *testing.T) {
 	}
 	if got, want := e.key, "0"; got != want {
 		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+}
+
+func TestIntKeyedMap(t *testing.T) {
+	{
+		if got, want := newFields(map[int8]int8{1: 2})[0].value(), int8(2); got != want {
+			t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+		}
+	}
+	{
+		if got, want := newFields(map[int16]int16{1: 2})[0].value(), int16(2); got != want {
+			t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+		}
+	}
+	{
+		if got, want := newFields(map[int32]int32{1: 2})[0].value(), int32(2); got != want {
+			t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+		}
+	}
+	{
+		if got, want := newFields(map[int64]int64{1: 2})[0].value(), int64(2); got != want {
+			t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+		}
+	}
+	{
+		if got, want := newFields(map[uint8]uint8{1: 2})[0].value(), uint8(2); got != want {
+			t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+		}
+	}
+	{
+		if got, want := newFields(map[uint16]uint16{1: 2})[0].value(), uint16(2); got != want {
+			t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+		}
+	}
+	{
+		if got, want := newFields(map[uint32]uint32{1: 2})[0].value(), uint32(2); got != want {
+			t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+		}
+	}
+	{
+		if got, want := newFields(map[uint64]uint64{1: 2})[0].value(), uint64(2); got != want {
+			t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+		}
 	}
 }

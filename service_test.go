@@ -43,3 +43,42 @@ func TestServe(t *testing.T) {
 		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
 	}
 }
+
+func TestServiceFollow(t *testing.T) {
+	s := NewService("now", time.Now()).(*service)
+	s.Follow("now.loc")
+	oa := s.explorer.accessMap[0][1]
+	if got, want := oa.label, "now.loc"; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+	s.Follow("now.ext", RowColumn(1, 1))
+	oa = s.explorer.accessMap[1][1]
+	if got, want := oa.label, "now.ext"; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+}
+
+func TestServiceExplore(t *testing.T) {
+	s := NewService().(*service)
+	s.Explore("now", time.Now())
+	oa := s.explorer.accessMap[0][0]
+	if got, want := oa.label, "now"; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+	s.Dump()
+}
+func TestServiceExploreWithOption(t *testing.T) {
+	s := NewService().(*service)
+	s.Explore("now", time.Now(), RowColumn(2, 2))
+	oa := s.explorer.accessMap[2][2]
+	if got, want := oa.label, "now"; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+}
+func TestServicEmptyFollow(t *testing.T) {
+	s := NewService().(*service)
+	s.Follow("")
+	if len(s.explorer.accessMap) != 0 {
+		t.Fail()
+	}
+}

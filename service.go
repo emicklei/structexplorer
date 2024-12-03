@@ -12,6 +12,22 @@ import (
 	"strings"
 )
 
+// Service is an HTTP Handler to explore one or more values (structures).
+type Service interface {
+	http.Handler
+	// Start accepts 0 or 1 Options
+	Start(opts ...Options)
+
+	// Dump writes an HTML file for displaying the current state of the explorer and its entries.
+	Dump()
+
+	// Explore adds a new entry (next available row in column 0) for a value unless it cannot be explored.
+	Explore(label string, value any, options ...ExploreOption) Service
+
+	// Follow adds a new entry for a value at the specified path unless it cannot be explored.
+	Follow(path string, options ...ExploreOption) Service
+}
+
 //go:embed index_tmpl.html
 var indexHTML string
 
@@ -24,51 +40,9 @@ func (s *service) init() {
 	s.indexTemplate = tmpl
 }
 
-// Options can be used to configure a Service on startup.
-type Options struct {
-	// Uses 5656 as the default
-	HTTPPort int
-	// Uses http.DefaultServeMux as default
-	ServeMux *http.ServeMux
-	// Uses "/" as default
-	HTTPBasePath string
-}
-
-func (o *Options) rootPath() string {
-	if o.HTTPBasePath == "" {
-		return "/"
-	}
-	return path.Join("/", o.HTTPBasePath)
-}
-
-func (o *Options) httpPort() int {
-	if o.HTTPPort == 0 {
-		return 5656
-	}
-	return o.HTTPPort
-}
-
-func (o *Options) serveMux() *http.ServeMux {
-	if o.ServeMux == nil {
-		return http.DefaultServeMux
-	}
-	return o.ServeMux
-}
-
 type service struct {
 	explorer      *explorer
 	indexTemplate *template.Template
-}
-
-// Service is an HTTP Handler to explore one or more values (structures).
-type Service interface {
-	http.Handler
-	// Start accepts 0 or 1 Options
-	Start(opts ...Options)
-	// Dump writes an HTML file for displaying the current state of the explorer and its entries.
-	Dump()
-	// Explore adds a new entry (next available row in column 0) for a value unless it cannot be explored.
-	Explore(label string, value any) Service
 }
 
 // NewService creates a new to explore one or more values (structures).
@@ -131,21 +105,29 @@ func (s *service) serveIndex(w http.ResponseWriter, _ *http.Request) {
 }
 
 // Explore adds a new entry (next available row in column 0) for a value if it can be explored.
-func (s *service) Explore(label string, value any) Service {
+func (s *service) Explore(label string, value any, options ...ExploreOption) Service {
 	defer s.protect()()
 
+	row, column := 0, 0
+	placement := OnRow(row)
+	if len(options) > 0 {
+		placement = options[0]
+		row, column = options[0].placement(s.explorer)
+	}
 	if !canExplore(value) {
 		slog.Info("value can not be explored", "value", value)
 		return s
 	}
-	s.explorer.putObjectOnRowStartingAtColumn(0, 0, objectAccess{
+	oa := objectAccess{
 		isRoot:    true,
 		object:    value,
 		path:      []string{""},
 		label:     label,
 		hideZeros: true,
 		typeName:  fmt.Sprintf("%T", value),
-	})
+	}
+
+	s.explorer.putObjectStartingAt(row, column, oa, placement)
 	return s
 }
 
@@ -235,11 +217,36 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 			// other keys
 			v = oa.Value()
 			if !canExplore(v) {
-				slog.Warn("[structexplorer] cannot explore this", "value", v, "type", fmt.Sprintf("%T", v))
+				slog.Warn("[structexplorer] cannot explore this", "value", v, "path", oa.label, "type", fmt.Sprintf("%T", v))
 				continue
 			}
 		}
 		oa.typeName = fmt.Sprintf("%T", v)
-		s.explorer.putObjectOnRowStartingAtColumn(toRow, toColumn, oa)
+		s.explorer.putObjectStartingAt(toRow, toColumn, oa, OnRow(toRow))
 	}
+}
+
+func (s *service) Follow(newPath string, options ...ExploreOption) Service {
+	if newPath == "" {
+		return s
+	}
+	pathTokens := strings.Split(newPath, ".")
+	// find root
+	root, row, col, ok := s.explorer.rootAccessWithLabel(pathTokens[0])
+	if !ok {
+		slog.Warn("[structexplorer] object not found", "label", pathTokens[0])
+		return s
+	}
+	oa := objectAccess{
+		object:    root.object,
+		path:      pathTokens[1:],
+		label:     newPath,
+		hideZeros: true,
+	}
+	placement := OnRow(row)
+	if len(options) > 0 {
+		placement = options[0]
+	}
+	s.explorer.putObjectStartingAt(row, col, oa, placement)
+	return s
 }

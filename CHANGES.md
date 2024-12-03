@@ -1,3 +1,8 @@
+### v0.6.0
+
+- add Follow to service for navigation of structs
+- add ExploreOption for control of where to put a struct
+
 ### v0.5.0
 
 - add "c" (clear) button for not-root removals

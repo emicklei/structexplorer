@@ -26,12 +26,12 @@ func (o objectAccess) isEmpty() bool {
 }
 
 type explorer struct {
-	mutex     *sync.Mutex // to protect concurrent access to the map
-	accessMap map[int]map[int]objectAccess
-	options   *Options // some properties can be modified by user
+	mutex     *sync.Mutex                  // to protect concurrent access to the map
+	accessMap map[int]map[int]objectAccess // row -> column -> objectAccess
+	options   *Options                     // some properties can be modified by user
 }
 
-func (e *explorer) maxColumn(row int) int {
+func (e *explorer) nextFreeColumn(row int) int {
 	max := 0
 	cols, ok := e.accessMap[row]
 	if !ok {
@@ -45,6 +45,18 @@ func (e *explorer) maxColumn(row int) int {
 	return max
 }
 
+func (e *explorer) nextFreeRow(column int) int {
+	for row, cols := range e.accessMap {
+		_, ok := cols[column]
+		if ok {
+			// cell taken
+		} else {
+			return row
+		}
+	}
+	return 0
+}
+
 func (e *explorer) rootKeys() (list []string) {
 	for _, row := range e.accessMap {
 		for _, access := range row {
@@ -52,6 +64,17 @@ func (e *explorer) rootKeys() (list []string) {
 		}
 	}
 	return
+}
+
+func (e *explorer) rootAccessWithLabel(label string) (oa objectAccess, row int, col int, ok bool) {
+	for row, rows := range e.accessMap {
+		for col, each := range rows {
+			if each.isRoot && each.label == label {
+				return each, row, col, true
+			}
+		}
+	}
+	return objectAccess{}, 0, 0, false
 }
 
 func newExplorerOnAll(labelValuePairs ...any) *explorer {
@@ -72,14 +95,14 @@ func newExplorerOnAll(labelValuePairs ...any) *explorer {
 			slog.Info("value can not be explored", "value", value)
 			continue
 		}
-		s.putObjectOnRowStartingAtColumn(row, 0, objectAccess{
+		s.putObjectStartingAt(row, 0, objectAccess{
 			isRoot:    true,
 			object:    value,
 			path:      []string{""},
 			label:     label,
 			hideZeros: true,
 			typeName:  fmt.Sprintf("%T", value),
-		})
+		}, OnRow(row))
 		row++
 	}
 	return s
@@ -112,10 +135,10 @@ func (e *explorer) removeObjectAt(row, col int) {
 func (e *explorer) updateObjectAt(row, col int, updater func(access objectAccess) objectAccess) {
 	old := e.objectAt(row, col)
 	e.removeObjectAt(row, col)
-	e.putObjectOnRowStartingAtColumn(row, col, updater(old))
+	e.putObjectStartingAt(row, col, updater(old), OnRow(row))
 }
 
-func (e *explorer) putObjectOnRowStartingAtColumn(row, col int, access objectAccess) {
+func (e *explorer) putObjectStartingAt(row, col int, access objectAccess, option ExploreOption) {
 	r, ok := e.accessMap[row]
 	if !ok {
 		r = map[int]objectAccess{}
@@ -126,8 +149,9 @@ func (e *explorer) putObjectOnRowStartingAtColumn(row, col int, access objectAcc
 		r[col] = access
 		return
 	}
-	// cell is taken
-	e.putObjectOnRowStartingAtColumn(row, e.maxColumn(row)+1, access)
+	// cell is taken, use option to find a new location
+	newRow, newCol := option.placement(e)
+	e.putObjectStartingAt(newRow, newCol, access, option)
 }
 
 func (e *explorer) buildIndexData(b *indexDataBuilder) indexData {
