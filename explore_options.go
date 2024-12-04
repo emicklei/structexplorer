@@ -16,8 +16,8 @@ func RowColumn(row, column int) ExploreOption {
 	}
 }
 
-// OnColumn places the next object in the same column on a new free row.
-func OnColumn(column int) ExploreOption {
+// Column places the next object in the same column on a new free row.
+func Column(column int) ExploreOption {
 	return ExploreOption{
 		placement: func(e *explorer) (newRow, newColumn int) {
 			return e.nextFreeRow(column) + 1, column
@@ -25,8 +25,8 @@ func OnColumn(column int) ExploreOption {
 	}
 }
 
-// OnRow places the next object in the same row on a new free column.
-func OnRow(row int) ExploreOption {
+// Row places the next object in the same row on a new free column.
+func Row(row int) ExploreOption {
 	return ExploreOption{
 		placement: func(e *explorer) (newRow, newColumn int) {
 			return row, e.nextFreeColumn(row) + 1

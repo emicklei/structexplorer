@@ -56,7 +56,7 @@ The explorer can also be asked to dump an HTML page with the current state of va
 
     s := structexplorer.NewService()
     s.Explore("yours", yourStruct)
-    s.Follow("yours.field")
+    s.ExplorePath("yours.field") // dotted path of fields starting with an explore label
     s.Dump()
 
 Another method is to use a special test case which starts an explorer at the end of a test and then run it with a longer acceptable timeout.

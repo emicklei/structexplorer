@@ -24,8 +24,8 @@ type Service interface {
 	// Explore adds a new entry (next available row in column 0) for a value unless it cannot be explored.
 	Explore(label string, value any, options ...ExploreOption) Service
 
-	// Follow adds a new entry for a value at the specified path unless it cannot be explored.
-	Follow(path string, options ...ExploreOption) Service
+	// ExplorePath adds a new entry for a value at the specified access path unless it cannot be explored.
+	ExplorePath(dottedPath string, options ...ExploreOption) Service
 }
 
 //go:embed index_tmpl.html
@@ -109,7 +109,7 @@ func (s *service) Explore(label string, value any, options ...ExploreOption) Ser
 	defer s.protect()()
 
 	row, column := 0, 0
-	placement := OnRow(row)
+	placement := Row(row)
 	if len(options) > 0 {
 		placement = options[0]
 		row, column = options[0].placement(s.explorer)
@@ -222,11 +222,11 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		oa.typeName = fmt.Sprintf("%T", v)
-		s.explorer.putObjectStartingAt(toRow, toColumn, oa, OnRow(toRow))
+		s.explorer.putObjectStartingAt(toRow, toColumn, oa, Row(toRow))
 	}
 }
 
-func (s *service) Follow(newPath string, options ...ExploreOption) Service {
+func (s *service) ExplorePath(newPath string, options ...ExploreOption) Service {
 	if newPath == "" {
 		return s
 	}
@@ -243,7 +243,7 @@ func (s *service) Follow(newPath string, options ...ExploreOption) Service {
 		label:     newPath,
 		hideZeros: true,
 	}
-	placement := OnRow(row)
+	placement := Row(row)
 	if len(options) > 0 {
 		placement = options[0]
 	}

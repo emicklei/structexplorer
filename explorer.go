@@ -102,7 +102,7 @@ func newExplorerOnAll(labelValuePairs ...any) *explorer {
 			label:     label,
 			hideZeros: true,
 			typeName:  fmt.Sprintf("%T", value),
-		}, OnRow(row))
+		}, Row(row))
 		row++
 	}
 	return s
@@ -135,7 +135,7 @@ func (e *explorer) removeObjectAt(row, col int) {
 func (e *explorer) updateObjectAt(row, col int, updater func(access objectAccess) objectAccess) {
 	old := e.objectAt(row, col)
 	e.removeObjectAt(row, col)
-	e.putObjectStartingAt(row, col, updater(old), OnRow(row))
+	e.putObjectStartingAt(row, col, updater(old), Row(row))
 }
 
 func (e *explorer) putObjectStartingAt(row, col int, access objectAccess, option ExploreOption) {

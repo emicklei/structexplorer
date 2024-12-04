@@ -22,7 +22,7 @@ func TestExplorerClear(t *testing.T) {
 	if got, want := len(x.accessMap), 1; got != want {
 		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
 	}
-	x.putObjectStartingAt(1, 1, objectAccess{}, OnRow(0))
+	x.putObjectStartingAt(1, 1, objectAccess{}, Row(0))
 	if got, want := len(x.accessMap), 2; got != want {
 		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
 	}
@@ -52,7 +52,7 @@ func TestExplorerTable(t *testing.T) {
 		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
 	}
 	o2 := objectAccess{object: 1}
-	x.putObjectStartingAt(1, 1, o2, OnColumn(1))
+	x.putObjectStartingAt(1, 1, o2, Column(1))
 	o3 := x.objectAt(1, 1)
 	if o2.object != o3.object {
 		t.Fail()

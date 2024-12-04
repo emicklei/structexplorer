@@ -46,12 +46,12 @@ func TestServe(t *testing.T) {
 
 func TestServiceFollow(t *testing.T) {
 	s := NewService("now", time.Now()).(*service)
-	s.Follow("now.loc")
+	s.ExplorePath("now.loc")
 	oa := s.explorer.accessMap[0][1]
 	if got, want := oa.label, "now.loc"; got != want {
 		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
 	}
-	s.Follow("now.ext", RowColumn(1, 1))
+	s.ExplorePath("now.ext", RowColumn(1, 1))
 	oa = s.explorer.accessMap[1][1]
 	if got, want := oa.label, "now.ext"; got != want {
 		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
@@ -77,7 +77,7 @@ func TestServiceExploreWithOption(t *testing.T) {
 }
 func TestServicEmptyFollow(t *testing.T) {
 	s := NewService().(*service)
-	s.Follow("")
+	s.ExplorePath("")
 	if len(s.explorer.accessMap) != 0 {
 		t.Fail()
 	}
