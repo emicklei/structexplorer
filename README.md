@@ -16,7 +16,7 @@ A Go Struct Explorer Service (http.Handler) that offers remote inspection of any
 
 ## usage
 
-    structexplorer.NewService("some structure", yourStruct).Start()
+    go structexplorer.NewService("some structure", yourStruct).Start()
 
 then a HTTP service will be started
 
