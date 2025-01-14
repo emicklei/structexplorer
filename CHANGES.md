@@ -1,3 +1,11 @@
+### v0.6.2
+
+- fix panic for pointer to slice of embedded type
+
+### v0.6.1
+
+- rename Follow to ExplorePath
+
 ### v0.6.0
 
 - add Follow to service for navigation of structs
