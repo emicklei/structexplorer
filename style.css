@@ -1,64 +1,92 @@
 :root {
-    --background-color: #add8e6;
-    --font-color: #2c2c2c;
-    --button-bg: #ffffff;
-    --button-active-bg: #21292c;
-    --button-color: #2c2c2c;
-    --button-active-color: #ffffff;
+    --background-color: #add8e6ff; /* Default (Auto) Light Background */
+    --font-color: #2c2c2c; /* Default (Auto) Font Color */
 }
 
-[data-theme="dark"] {
-    --background-color: #21292c;
-    --font-color: #c1c1c1;
-    --button-bg: #333333;
-    --button-active-bg: #555555;
-    --button-color: #c1c1c1;
-    --button-active-color: #ffffff;
-}
-
-[data-theme="light"] {
-    --background-color: #add8e6;
-    --font-color: #2c2c2c;
-    --button-bg: #ffffff;
-    --button-active-bg: #333333;
-    --button-color: #2c2c2c;
-    --button-active-color: #ffffff;
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background-color: #21292c; /* Default Dark Background */
+        --font-color: #c1c1c1; /* Default Dark Font Color */
+    }
 }
 
 html,
 body {
-    color-scheme: auto;
     margin: 0;
     padding: 0;
     font-size: 14px;
     color: var(--font-color);
-    background-color: var(--background-color);
 }
 
 body {
     margin: 4px;
     box-sizing: border-box;
     font-family: monospace, monospace;
+    background-color: var(--background-color);
+    transition:
+        background-color 0.3s,
+        color 0.3s; /* Smooth transition */
 }
 
-/* Updated select element styling */
+/* Base styles for select and option */
 select {
     font-size: 14px;
     overflow-y: hidden;
     font-family: monospace, monospace;
     color: var(--font-color);
-    background-color: var(--input-background); /* Use theme variable */
-    border: 1px solid var(--font-color);
+    background-color: var(--background-color); /* Base background color */
+    border: 1px solid #ccc; /* Optional: Add a border for better visibility */
     height: 100%;
     width: 100%;
+    appearance: none; /* Remove default arrow for consistency */
+    padding: 4px; /* Add some padding */
+    box-sizing: border-box;
+    transition:
+        background-color 0.3s,
+        color 0.3s; /* Smooth transition */
 }
 
 option {
     padding: 2px;
-    color: var(--font-color);
-    background-color: var(--input-background);
+    background-color: var(
+        --background-color
+    ); /* Ensure options match the theme */
+    color: var(--font-color); /* Ensure text color matches the theme */
 }
 
+/* Theme-specific overrides */
+body.light {
+    --background-color: #add8e6ff; /* Light Theme Background */
+    --font-color: #2c2c2c; /* Light Theme Font Color */
+}
+
+body.dark {
+    --background-color: #21292c; /* Dark Theme Background */
+    --font-color: #c1c1c1; /* Dark Theme Font Color */
+}
+
+/* Ensure select and option respect theme-specific background */
+body.light select {
+    background-color: #ffffff; /* Explicitly set to white for Light Theme */
+    color: var(--font-color);
+}
+
+body.light option {
+    background-color: #ffffff; /* Explicitly set to white for Light Theme */
+    color: var(--font-color);
+}
+
+body.dark select {
+    background-color: #21292c; /* Explicitly set to dark for Dark Theme */
+    color: var(--font-color);
+}
+
+body.dark option {
+    background-color: #21292c; /* Explicitly set to dark for Dark Theme */
+    color: var(--font-color);
+}
+
+/* Additional Styles */
 td {
     vertical-align: top;
 }
@@ -95,33 +123,11 @@ td {
     margin: 0;
 }
 
-/* Button Container */
-.toggle-buttons {
-    display: flex;
-    gap: 5px;
-    justify-content: flex-start;
-    margin-top: 20px;
-}
-
-/* Button Styling */
-.toggle-btn {
-    padding: 5px 10px;
-    background-color: var(--button-bg);
-    color: var(--button-color);
-    border: 2px solid var(--font-color);
-    border-radius: 5px;
+/* Toggle Button Styling */
+.theme-toggle {
     cursor: pointer;
-    transition:
-        background-color 0.3s ease,
-        color 0.3s ease;
-}
-
-.toggle-btn.active {
-    background-color: var(--button-active-bg);
-    color: var(--button-active-color);
-}
-
-.toggle-btn:hover {
-    background-color: var(--button-active-bg);
-    color: var(--button-active-color);
+    margin-left: 8px;
+    font-size: 16px;
+    vertical-align: middle;
+    user-select: none;
 }
