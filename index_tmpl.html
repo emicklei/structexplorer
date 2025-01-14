@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 
 {{- define "struct"}}
 <div class="col">
@@ -7,64 +7,203 @@
     <div class="typename">{{.Type}}</div>
     <select id="{{.SelectID}}" multiple size="{{.SelectSize}}">
         {{- range .Fields }}
-        <option value="{{.Key}}" title="{{ .Label }} : {{ .Type }}">{{ .Padding }}{{ .Label }}:&nbsp;{{ .ValueString }}</option>
+        <option value="{{.Key}}" title="{{ .Label }} : {{ .Type }}">
+            {{ .Padding }}{{ .Label }}:&nbsp;{{ .ValueString }}
+        </option>
         {{- end }}
     </select>
     <script>
         <!-- update visible size of select -->
         {
-            const n = document.getElementById('{{.SelectID}}');
+            const n = document.getElementById("{{.SelectID}}");
             n.setAttribute("size", n.options.length);
         }
     </script>
     {{- if not .NotLive }}
-        <div class="buttonbar">
-            <button class="btn" title="explore all selected in the row below" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'down');">&ddarr;</button>
-            <button class="btn" title="explore all selected in columns on the right" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'right');">&rrarr;</button>
-            <button class="btn" title="explore all selected in the row above" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'up');">&uuarr;</button>
-            {{- if .HasZeros }}
-                <button class="btn" title="hide or show fields with zero values" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'toggleZeros');">z</button>
-            {{- end}}
-            {{- if .IsRoot }}
-                <button class="btn" title="remove all objects except the roots" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'clear');">c</button>
-            {{- else }}
-                <button class="btn" title="remove the object from this page" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'remove');">x</button>
-            {{- end }}
-        </div>
-    {{- end}}
-    {{- end }}
+    <div class="buttonbar">
+        <button
+            class="btn"
+            title="explore all selected in the row below"
+            onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'down');"
+        >
+            &ddarr;
+        </button>
+        <button
+            class="btn"
+            title="explore all selected in columns on the right"
+            onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'right');"
+        >
+            &rrarr;
+        </button>
+        <button
+            class="btn"
+            title="explore all selected in the row above"
+            onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'up');"
+        >
+            &uuarr;
+        </button>
+        {{- if .HasZeros }}
+        <button
+            class="btn"
+            title="hide or show fields with zero values"
+            onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'toggleZeros');"
+        >
+            z
+        </button>
+        {{- end}} {{- if .IsRoot }}
+        <button
+            class="btn"
+            title="remove all objects except the roots"
+            onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'clear');"
+        >
+            c
+        </button>
+        {{- else }}
+        <button
+            class="btn"
+            title="remove the object from this page"
+            onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'remove');"
+        >
+            x
+        </button>
+        {{- end }}
+    </div>
+    {{- end}} {{- end }}
 </div>
 {{- end}}
 
-
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <meta name="color-scheme" content="light dark"/>
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+        />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        <meta name="color-scheme" content="light dark" />
 
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ADD8E6FF"/>
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#21292c"/>
+        <meta
+            name="theme-color"
+            media="(prefers-color-scheme: light)"
+            content="#ADD8E6FF"
+        />
+        <meta
+            name="theme-color"
+            media="(prefers-color-scheme: dark)"
+            content="#21292c"
+        />
 
-    <title>Struct Explorer</title>
+        <title>Struct Explorer</title>
 
-    <script>{{.Script}}</script>
-    <style>{{.Style}}</style>
-</head>
+        <script>
+            {{.Script}}
+        </script>
+        <style>
+            {{.Style}}
+        </style>
+    </head>
 
-<body>
-<table>
-    {{- range .Rows }}
-    <tr>
-        {{- range .Cells}}
-        <td>
-            {{ template "struct" . }}
-        </td>
-        {{- end }}
-    </tr>
-    {{- end }}
-</table>
-<p style="font-size: x-small;" >&copy; 2024 <a href="https://github.com/emicklei/structexplorer">structexplorer</a></p>
-</body>
+    <body>
+        <table>
+            {{- range .Rows }}
+            <tr>
+                {{- range .Cells}}
+                <td>{{ template "struct" . }}</td>
+                {{- end }}
+            </tr>
+            {{- end }}
+        </table>
+
+        <div class="toggle-buttons">
+            <button id="light-mode" class="toggle-btn">Light</button>
+            <button id="auto-mode" class="toggle-btn active">Auto</button>
+            <button id="dark-mode" class="toggle-btn">Dark</button>
+        </div>
+
+        <p style="font-size: x-small">
+            &copy; 2025
+            <a href="https://github.com/emicklei/structexplorer"
+                >structexplorer</a
+            >
+        </p>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const lightBtn = document.getElementById("light-mode");
+                const autoBtn = document.getElementById("auto-mode");
+                const darkBtn = document.getElementById("dark-mode");
+                const buttons = [lightBtn, autoBtn, darkBtn];
+
+                // Function to apply theme
+                const applyTheme = (theme) => {
+                    if (theme === "auto") {
+                        // Follow system preference
+                        const isDarkMode = window.matchMedia(
+                            "(prefers-color-scheme: dark)",
+                        ).matches;
+                        document.documentElement.setAttribute(
+                            "data-theme",
+                            isDarkMode ? "dark" : "light",
+                        );
+
+                        // Add event listener for system preference changes
+                        window
+                            .matchMedia("(prefers-color-scheme: dark)")
+                            .addEventListener("change", (event) => {
+                                if (
+                                    sessionStorage.getItem("theme") === "auto"
+                                ) {
+                                    document.documentElement.setAttribute(
+                                        "data-theme",
+                                        event.matches ? "dark" : "light",
+                                    );
+                                }
+                            });
+                    } else {
+                        // Manually apply light or dark theme
+                        document.documentElement.setAttribute(
+                            "data-theme",
+                            theme,
+                        );
+                    }
+                };
+
+                // Function to update active button
+                const updateActiveButton = (activeBtn) => {
+                    buttons.forEach((btn) => btn.classList.remove("active"));
+                    activeBtn.classList.add("active");
+                };
+
+                // Button event listeners
+                lightBtn.addEventListener("click", () => {
+                    applyTheme("light");
+                    updateActiveButton(lightBtn);
+                    sessionStorage.setItem("theme", "light");
+                });
+
+                autoBtn.addEventListener("click", () => {
+                    applyTheme("auto");
+                    updateActiveButton(autoBtn);
+                    sessionStorage.setItem("theme", "auto");
+                });
+
+                darkBtn.addEventListener("click", () => {
+                    applyTheme("dark");
+                    updateActiveButton(darkBtn);
+                    sessionStorage.setItem("theme", "dark");
+                });
+
+                // Initialize theme based on sessionStorage or default to auto
+                const savedTheme = sessionStorage.getItem("theme") || "auto";
+                applyTheme(savedTheme);
+                if (savedTheme === "light") {
+                    updateActiveButton(lightBtn);
+                } else if (savedTheme === "auto") {
+                    updateActiveButton(autoBtn);
+                } else if (savedTheme === "dark") {
+                    updateActiveButton(darkBtn);
+                }
+            });
+        </script>
+    </body>
 </html>
