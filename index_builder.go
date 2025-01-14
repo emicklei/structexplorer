@@ -105,10 +105,13 @@ func safeComputeValueString(fa fieldAccess) string {
 }
 
 func tryComputeValueString(fa fieldAccess) (string, bool) {
-	// prevent panics
+	// capture panics
 	defer func() {
 		if err := recover(); err != nil {
-			slog.Error("[structexplorer] failed to get value of entry, fallback display", "key", fa.key, "label", fa.label, "type", fa.Type, "owner", fa.owner, "err", err)
+			slog.Error("[structexplorer] failed to get value of entry, fallback display",
+				"field", fa.key, "field.label", fa.label,
+				"field.type", fa.Type, "owner.type", fmt.Sprintf("%T", fa.owner),
+				"err", err)
 			full := string(debug.Stack())
 			methodToken := "structexplorer.printString"
 			idx := strings.Index(full, methodToken)

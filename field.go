@@ -180,8 +180,11 @@ func newFields(v any) []fieldAccess {
 	var rt reflect.Type
 	rv := reflect.ValueOf(v)
 	if rv.Kind() == reflect.Interface || rv.Kind() == reflect.Pointer {
-		elm := rv.Elem()
-		rt = elm.Type()
+		rv = rv.Elem()
+		if !rv.IsValid() {
+			return list
+		}
+		rt = rv.Type()
 	} else {
 		rt = reflect.TypeOf(v)
 	}

@@ -52,12 +52,14 @@ type object struct {
 	PI *int
 	sl []string
 	m  map[string]int
+	pa *[2]bool
 }
 
 func TestFieldValue(t *testing.T) {
 	var i int = 24
 	o := object{
 		i: i, pi: &i, I: i, PI: &i, sl: []string{"a"}, m: map[string]int{"a": 1},
+		pa: &[2]bool{true, false},
 	}
 	t.Log((&fieldAccess{owner: o, key: "sl"}).value())
 	t.Log((&fieldAccess{owner: &o, key: "i"}).value())
@@ -66,6 +68,19 @@ func TestFieldValue(t *testing.T) {
 	t.Log((&fieldAccess{owner: &o, key: "PI"}).value())
 	t.Log((&fieldAccess{owner: o, key: "null"}).value())
 	t.Log((&fieldAccess{owner: o, key: "m"}).value())
+	t.Log((&fieldAccess{owner: o, key: "pa"}).value())
+}
+
+func TestFieldValueUnset(t *testing.T) {
+	o := object{}
+	t.Log((&fieldAccess{owner: o, key: "sl"}).value())
+	t.Log((&fieldAccess{owner: &o, key: "i"}).value())
+	t.Log((&fieldAccess{owner: o, key: "pi"}).value())
+	t.Log((&fieldAccess{owner: &o, key: "I"}).value())
+	t.Log((&fieldAccess{owner: &o, key: "PI"}).value())
+	t.Log((&fieldAccess{owner: o, key: "null"}).value())
+	t.Log((&fieldAccess{owner: o, key: "m"}).value())
+	t.Log((&fieldAccess{owner: o, key: "pa"}).value())
 }
 
 func TestFieldMapAccess(t *testing.T) {
@@ -143,7 +158,7 @@ func TestMapStringString(t *testing.T) {
 func TestNewFields(t *testing.T) {
 	o := object{}
 	nf := newFields(o)
-	if got, want := len(nf), 6; got != want {
+	if got, want := len(nf), 7; got != want {
 		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
 	}
 	if got, want := nf[0].key, "i"; got != want {
@@ -473,4 +488,18 @@ func TestIntKeyedMap(t *testing.T) {
 			t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
 		}
 	}
+}
+
+func TestZeroPointerToSlice(t *testing.T) {
+	var ppts *[]int
+	l := newFields(ppts)
+	t.Log(l)
+}
+
+// call of reflect.Value.Len on ptr to non-array Value
+func TestPointerToInnerTypedSlice(t *testing.T) {
+	type item struct{ name string }
+	v := &[]item{{"ai"}}
+	l := newFields(v)
+	t.Log(l)
 }
