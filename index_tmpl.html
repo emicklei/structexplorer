@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 
 {{- define "struct"}}
 <div class="col">
@@ -7,64 +7,232 @@
     <div class="typename">{{.Type}}</div>
     <select id="{{.SelectID}}" multiple size="{{.SelectSize}}">
         {{- range .Fields }}
-        <option value="{{.Key}}" title="{{ .Label }} : {{ .Type }}">{{ .Padding }}{{ .Label }}:&nbsp;{{ .ValueString }}</option>
+        <option value="{{.Key}}" title="{{ .Label }} : {{ .Type }}">
+            {{ .Padding }}{{ .Label }}:&nbsp;{{ .ValueString }}
+        </option>
         {{- end }}
     </select>
     <script>
         <!-- update visible size of select -->
         {
-            const n = document.getElementById('{{.SelectID}}');
+            const n = document.getElementById("{{.SelectID}}");
             n.setAttribute("size", n.options.length);
         }
     </script>
     {{- if not .NotLive }}
-        <div class="buttonbar">
-            <button class="btn" title="explore all selected in the row below" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'down');">&ddarr;</button>
-            <button class="btn" title="explore all selected in columns on the right" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'right');">&rrarr;</button>
-            <button class="btn" title="explore all selected in the row above" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'up');">&uuarr;</button>
-            {{- if .HasZeros }}
-                <button class="btn" title="hide or show fields with zero values" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'toggleZeros');">z</button>
-            {{- end}}
-            {{- if .IsRoot }}
-                <button class="btn" title="remove all objects except the roots" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'clear');">c</button>
-            {{- else }}
-                <button class="btn" title="remove the object from this page" onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'remove');">x</button>
-            {{- end }}
-        </div>
-    {{- end}}
-    {{- end }}
+    <div class="buttonbar">
+        <button
+            class="btn"
+            title="explore all selected in the row below"
+            onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'down');"
+        >
+            &ddarr;
+        </button>
+        <button
+            class="btn"
+            title="explore all selected in columns on the right"
+            onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'right');"
+        >
+            &rrarr;
+        </button>
+        <button
+            class="btn"
+            title="explore all selected in the row above"
+            onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'up');"
+        >
+            &uuarr;
+        </button>
+        {{- if .HasZeros }}
+        <button
+            class="btn"
+            title="hide or show fields with zero values"
+            onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'toggleZeros');"
+        >
+            z
+        </button>
+        {{- end}} {{- if .IsRoot }}
+        <button
+            class="btn"
+            title="remove all objects except the roots"
+            onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'clear');"
+        >
+            c
+        </button>
+        {{- else }}
+        <button
+            class="btn"
+            title="remove the object from this page"
+            onclick="javascript:explore({{.Row}},{{.Column}},getElementById('{{.SelectID}}'),'remove');"
+        >
+            x
+        </button>
+        {{- end }}
+    </div>
+    {{- end}} {{- end }}
 </div>
 {{- end}}
 
-
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <meta name="color-scheme" content="light dark"/>
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+        />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        <meta name="color-scheme" content="light dark" />
 
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ADD8E6FF"/>
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#21292c"/>
+        <meta
+            name="theme-color"
+            media="(prefers-color-scheme: light)"
+            content="#ADD8E6FF"
+        />
+        <meta
+            name="theme-color"
+            media="(prefers-color-scheme: dark)"
+            content="#21292c"
+        />
 
-    <title>Struct Explorer</title>
+        <title>Struct Explorer</title>
 
-    <script>{{.Script}}</script>
-    <style>{{.Style}}</style>
-</head>
+        <script>
+            {{.Script}}
+        </script>
+        <style>
+            {{.Style}}
+        </style>
+    </head>
 
-<body>
-<table>
-    {{- range .Rows }}
-    <tr>
-        {{- range .Cells}}
-        <td>
-            {{ template "struct" . }}
-        </td>
-        {{- end }}
-    </tr>
-    {{- end }}
-</table>
-<p style="font-size: x-small;" >&copy; 2024 <a href="https://github.com/emicklei/structexplorer">structexplorer</a></p>
-</body>
+    <body>
+        <table>
+            {{- range .Rows }}
+            <tr>
+                {{- range .Cells}}
+                <td>{{ template "struct" . }}</td>
+                {{- end }}
+            </tr>
+            {{- end }}
+        </table>
+        <p style="font-size: x-small;margin-top:10px'">
+            &copy; 2025
+            <a href="https://github.com/emicklei/structexplorer"
+                >structexplorer</a
+            >
+            <span id="theme-toggle" class="theme-toggle" title="Toggle Theme"
+                >🔄</span
+            >
+        </p>
+
+        <script>
+            (function () {
+                const toggleButton = document.getElementById("theme-toggle");
+                const THEME_KEY = "preferred-theme";
+                const themes = ["auto", "light", "dark"];
+                let currentThemeIndex = 0;
+                let mediaQueryList = window.matchMedia(
+                    "(prefers-color-scheme: dark)",
+                );
+                let systemThemeChangeListener = null;
+
+                // Apply Theme
+                function applyTheme(theme) {
+                    if (theme === "auto") {
+                        applyAutoTheme();
+                        addSystemThemeListener();
+                    } else {
+                        document.body.classList.remove("light", "dark");
+                        if (theme === "light") {
+                            document.body.classList.add("light");
+                        } else if (theme === "dark") {
+                            document.body.classList.add("dark");
+                        }
+                        removeSystemThemeListener();
+                    }
+                    updateToggleIcon(theme);
+                }
+
+                // Update Toggle Icon based on theme
+                function updateToggleIcon(theme) {
+                    switch (theme) {
+                        case "light":
+                            toggleButton.textContent = "☀️";
+                            toggleButton.title = "Light Theme";
+                            break;
+                        case "dark":
+                            toggleButton.textContent = "🌙";
+                            toggleButton.title = "Dark Theme";
+                            break;
+                        case "auto":
+                        default:
+                            toggleButton.textContent = "🔄";
+                            toggleButton.title = "Auto Theme";
+                            break;
+                    }
+                }
+
+                // Get Preferred Theme from localStorage
+                function getPreferredTheme() {
+                    return localStorage.getItem(THEME_KEY) || "auto";
+                }
+
+                // Set Preferred Theme to localStorage
+                function setPreferredTheme(theme) {
+                    localStorage.setItem(THEME_KEY, theme);
+                }
+
+                // Initialize Theme
+                function initTheme() {
+                    const preferredTheme = getPreferredTheme();
+                    currentThemeIndex = themes.indexOf(preferredTheme);
+                    applyTheme(preferredTheme);
+                }
+
+                // Toggle Theme on Click
+                toggleButton.addEventListener("click", () => {
+                    currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+                    const selectedTheme = themes[currentThemeIndex];
+                    setPreferredTheme(selectedTheme);
+                    applyTheme(selectedTheme);
+                });
+
+                // Apply Auto Theme based on system preference
+                function applyAutoTheme() {
+                    const prefersDark = mediaQueryList.matches;
+                    document.body.classList.remove("light", "dark");
+                    if (prefersDark) {
+                        document.body.classList.add("dark");
+                    } else {
+                        document.body.classList.add("light");
+                    }
+                }
+
+                // Add system theme change listener
+                function addSystemThemeListener() {
+                    if (!systemThemeChangeListener) {
+                        systemThemeChangeListener = (e) => {
+                            applyAutoTheme();
+                        };
+                        mediaQueryList.addEventListener(
+                            "change",
+                            systemThemeChangeListener,
+                        );
+                    }
+                }
+
+                // Remove system theme change listener
+                function removeSystemThemeListener() {
+                    if (systemThemeChangeListener) {
+                        mediaQueryList.removeEventListener(
+                            "change",
+                            systemThemeChangeListener,
+                        );
+                        systemThemeChangeListener = null;
+                    }
+                }
+
+                // Initialize on page load
+                initTheme();
+            })();
+        </script>
+    </body>
 </html>

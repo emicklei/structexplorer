@@ -1,12 +1,12 @@
 :root {
-    --background-color: #ADD8E6FF;
-    --font-color: #2c2c2c;
+    --background-color: #add8e6ff; /* Default (Auto) Light Background */
+    --font-color: #2c2c2c; /* Default (Auto) Font Color */
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --background-color: #21292c;
-        --font-color: #c1c1c1;
+        --background-color: #21292c; /* Default Dark Background */
+        --font-color: #c1c1c1; /* Default Dark Font Color */
     }
 }
 
@@ -20,26 +20,73 @@ body {
 
 body {
     margin: 4px;
-    /* padding: 1rem 1.5rem; */
     box-sizing: border-box;
     font-family: monospace, monospace;
-
     background-color: var(--background-color);
+    transition:
+        background-color 0.3s,
+        color 0.3s; /* Smooth transition */
 }
 
+/* Base styles for select and option */
 select {
     font-size: 14px;
     overflow-y: hidden;
     font-family: monospace, monospace;
     color: var(--font-color);
+    background-color: var(--background-color); /* Base background color */
+    border: 1px solid #ccc; /* Optional: Add a border for better visibility */
     height: 100%;
     width: 100%;
+    appearance: none; /* Remove default arrow for consistency */
+    padding: 4px; /* Add some padding */
+    box-sizing: border-box;
+    transition:
+        background-color 0.3s,
+        color 0.3s; /* Smooth transition */
 }
 
 option {
     padding: 2px;
+    background-color: var(
+        --background-color
+    ); /* Ensure options match the theme */
+    color: var(--font-color); /* Ensure text color matches the theme */
 }
 
+/* Theme-specific overrides */
+body.light {
+    --background-color: #add8e6ff; /* Light Theme Background */
+    --font-color: #2c2c2c; /* Light Theme Font Color */
+}
+
+body.dark {
+    --background-color: #21292c; /* Dark Theme Background */
+    --font-color: #c1c1c1; /* Dark Theme Font Color */
+}
+
+/* Ensure select and option respect theme-specific background */
+body.light select {
+    background-color: #ffffff; /* Explicitly set to white for Light Theme */
+    color: var(--font-color);
+}
+
+body.light option {
+    background-color: #ffffff; /* Explicitly set to white for Light Theme */
+    color: var(--font-color);
+}
+
+body.dark select {
+    background-color: #21292c; /* Explicitly set to dark for Dark Theme */
+    color: var(--font-color);
+}
+
+body.dark option {
+    background-color: #21292c; /* Explicitly set to dark for Dark Theme */
+    color: var(--font-color);
+}
+
+/* Additional Styles */
 td {
     vertical-align: top;
 }
@@ -74,4 +121,13 @@ td {
 .buttonbar .btn {
     font-size: 14px;
     margin: 0;
+}
+
+/* Toggle Button Styling */
+.theme-toggle {
+    cursor: pointer;
+    margin-left: 8px;
+    font-size: 16px;
+    vertical-align: middle;
+    user-select: none;
 }
