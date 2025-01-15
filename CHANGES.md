@@ -1,3 +1,7 @@
+### v0.7.0
+
+- add theme toggle button (dark,light,auto) (thx to @flaticols) 
+
 ### v0.6.2
 
 - fix panic for pointer to slice of embedded type
