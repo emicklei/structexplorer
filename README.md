@@ -43,7 +43,7 @@ or as a HTTP Handler function:
 - ⇈ : explore one or more selected values from the list and put them on the row up
 - z : show or hide fields which currently have zero value ("",0,nil,false)
 - x : remove the struct from the page
-- c : remove all struct from the page except the onces you started with
+- c : remove all structs from the page except the onces you started with
 
 Note: if the list contains just one structural value then selecting it can be skipped for ⇊, ⇈ and ⇉.
 
