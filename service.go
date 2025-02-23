@@ -21,7 +21,8 @@ type Service interface {
 	// Dump writes an HTML file for displaying the current state of the explorer and its entries.
 	Dump()
 
-	// Explore adds a new entry (next available row in column 0) for a value unless it cannot be explored.
+	// Explore adds or replaces (matching on label) a new entry for a value unless it cannot be explored.
+	// The object will be placed on the next available column on row 1.
 	Explore(label string, value any, options ...ExploreOption) Service
 
 	// ExplorePath adds a new entry for a value at the specified access path unless it cannot be explored.
@@ -104,20 +105,15 @@ func (s *service) serveIndex(w http.ResponseWriter, _ *http.Request) {
 	}
 }
 
-// Explore adds a new entry (next available row in column 0) for a value if it can be explored.
+// Explore adds or replaces a new entry (next available row in column 0) for a value if it can be explored.
 func (s *service) Explore(label string, value any, options ...ExploreOption) Service {
 	defer s.protect()()
 
-	row, column := 0, 0
-	placement := Row(row)
-	if len(options) > 0 {
-		placement = options[0]
-		row, column = options[0].placement(s.explorer)
-	}
 	if !canExplore(value) {
 		slog.Info("value can not be explored", "value", value)
 		return s
 	}
+
 	oa := objectAccess{
 		isRoot:    true,
 		object:    value,
@@ -127,6 +123,20 @@ func (s *service) Explore(label string, value any, options ...ExploreOption) Ser
 		typeName:  fmt.Sprintf("%T", value),
 	}
 
+	// are we replacing an object access?
+	_, oldRow, oldcolumn, ok := s.explorer.rootAccessWithLabel(label)
+	if ok {
+		s.explorer.putObjectAt(oldRow, oldcolumn, oa)
+		return s
+	}
+
+	// add as new
+	row, column := 0, 0
+	placement := Row(0)
+	if len(options) > 0 {
+		placement = options[0]
+		row, column = options[0].placement(s.explorer)
+	}
 	s.explorer.putObjectStartingAt(row, column, oa, placement)
 	return s
 }

@@ -138,6 +138,15 @@ func (e *explorer) updateObjectAt(row, col int, updater func(access objectAccess
 	e.putObjectStartingAt(row, col, updater(old), Row(row))
 }
 
+func (e *explorer) putObjectAt(row, col int, access objectAccess) {
+	r, ok := e.accessMap[row]
+	if !ok {
+		r = map[int]objectAccess{}
+		e.accessMap[row] = r
+	}
+	r[col] = access
+}
+
 func (e *explorer) putObjectStartingAt(row, col int, access objectAccess, option ExploreOption) {
 	r, ok := e.accessMap[row]
 	if !ok {

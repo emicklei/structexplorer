@@ -1,3 +1,7 @@
+### v0.8.1
+
+ - Explore replaces object with same root label.
+
 ### v0.8.0
 
 - add SetDefault to make a Service globally accessing to add new structs.
