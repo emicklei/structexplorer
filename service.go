@@ -250,3 +250,14 @@ func (s *service) ExplorePath(newPath string, options ...ExploreOption) Service 
 	s.explorer.putObjectStartingAt(row, col, oa, placement)
 	return s
 }
+
+var defaultService Service
+
+// SetDefault makes a service global available.
+// This can be used to explore new structs anywhere from a function.
+func SetDefault(s Service) {
+	defaultService = s
+}
+func Default() Service {
+	return defaultService
+}

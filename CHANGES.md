@@ -1,3 +1,7 @@
+### v0.8.0
+
+- add SetDefault to make a Service globally accessing to add new structs.
+
 ### v0.7.0
 
 - add theme toggle button (dark,light,auto) (thx to @flaticols) 
