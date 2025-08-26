@@ -214,7 +214,7 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 		oa := objectAccess{
 			object:    fromAccess.object,
 			path:      newPath,
-			label:     strings.Join(newPath, "."),
+			label:     fromAccess.label + "." + strings.Join(newPath[len(newPath)-1:], "."),
 			hideZeros: true,
 		}
 		var v any

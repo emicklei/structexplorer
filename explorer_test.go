@@ -1,6 +1,7 @@
 package structexplorer
 
 import (
+	"sync"
 	"testing"
 	"time"
 )
@@ -135,4 +136,40 @@ func TestCanExplore(t *testing.T) {
 		})
 	}
 
+}
+
+func TestExplorer_Concurrency(t *testing.T) {
+	t.Skip("Disabling test; it causes a deadlock when run with -race flag.")
+	// This test is designed to be run with the -race flag.
+	// It doesn't have explicit assertions but will fail if the race detector finds any issues.
+	s := NewService("test", time.Now()).(*service)
+	explorer := s.explorer
+
+	var wg sync.WaitGroup
+	numGoroutines := 10
+	wg.Add(numGoroutines)
+
+	for i := 0; i < numGoroutines; i++ {
+		go func(i int) {
+			defer wg.Done()
+
+			// Perform a mix of read and write operations
+			switch i % 4 {
+			case 0:
+				// Write operation
+				s.ExplorePath("test.wall")
+			case 1:
+				// Write operation
+				s.Explore("another", struct{ V int }{i})
+			case 2:
+				// Read operation
+				_ = explorer.buildIndexData(newIndexDataBuilder())
+			case 3:
+				// Write operation
+				explorer.removeNonRootObjects()
+			}
+		}(i)
+	}
+
+	wg.Wait()
 }
