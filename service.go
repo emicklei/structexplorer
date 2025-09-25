@@ -133,7 +133,11 @@ func (s *service) serveIndex(w http.ResponseWriter, _ *http.Request) {
 	defer s.protect()()
 
 	w.Header().Set("content-type", "text/html")
-	if err := s.indexTemplate.Execute(w, s.explorer.buildIndexData(newIndexDataBuilder())); err != nil {
+
+	builder := newIndexDataBuilder()
+	builder.isBreaking = s.httpServer != nil
+
+	if err := s.indexTemplate.Execute(w, s.explorer.buildIndexData(builder)); err != nil {
 		slog.Error("failed to execute template", "err", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

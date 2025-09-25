@@ -10,10 +10,11 @@ import (
 )
 
 type indexDataBuilder struct {
-	data     indexData
-	seq      int
-	notLive  bool
-	selectID string // id of the added fieldList (select element)
+	data       indexData
+	seq        int
+	notLive    bool
+	isBreaking bool   // service is started with Break(...)
+	selectID   string // id of the added fieldList (select element)
 }
 
 func newIndexDataBuilder() *indexDataBuilder {

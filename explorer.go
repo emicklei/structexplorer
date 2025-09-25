@@ -164,6 +164,9 @@ func (e *explorer) putObjectStartingAt(row, col int, access objectAccess, option
 }
 
 func (e *explorer) buildIndexData(b *indexDataBuilder) indexData {
+	// was it starting using Break?
+	b.data.IsBreaking = b.isBreaking
+
 	for row, each := range e.accessMap {
 		for col, access := range each {
 			info := b.build(row, col, access)

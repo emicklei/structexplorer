@@ -14,9 +14,10 @@ var styleCSS string
 
 type (
 	indexData struct {
-		Rows   []tableRow
-		Script template.JS
-		Style  template.CSS
+		Rows       []tableRow
+		Script     template.JS
+		Style      template.CSS
+		IsBreaking bool
 	}
 	tableRow struct {
 		Cells []fieldList
