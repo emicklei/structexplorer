@@ -44,6 +44,7 @@ func (s *service) init() {
 type service struct {
 	explorer      *explorer
 	indexTemplate *template.Template
+	httpServer    *http.Server
 }
 
 // NewService creates a new to explore one or more values (structures).
@@ -51,6 +52,36 @@ func NewService(labelValuePairs ...any) Service {
 	s := &service{explorer: newExplorerOnAll(labelValuePairs...)}
 	s.init()
 	return s
+}
+
+// Break will listen and serve on the given http port and path.
+// it accepts 0 or 1 Options to override defaults.
+// The explorer page will have a button "Resume" that stops the server
+// and unblocks the go-routine that started it.
+func (s *service) Break(opts ...Options) {
+	if len(opts) > 0 {
+		s.explorer.options = &opts[0]
+	}
+	port := s.explorer.options.httpPort()
+	serveMux := s.explorer.options.serveMux()
+	rootPath := s.explorer.options.rootPath()
+	serveMux.Handle(rootPath, s)
+	server := &http.Server{
+		Addr:    fmt.Sprintf(":%d", port),
+		Handler: serveMux,
+	}
+	s.httpServer = server
+	if err := server.ListenAndServe(); err != nil {
+		slog.Error("[structexplorer] failed to start service", "err", err)
+	}
+}
+
+func (s *service) resume() {
+	if s.httpServer == nil {
+		return
+	}
+	s.httpServer.Close()
+	s.httpServer = nil
 }
 
 // Start will listen and serve on the given http port and path.
@@ -64,7 +95,7 @@ func (s *service) Start(opts ...Options) {
 	rootPath := s.explorer.options.rootPath()
 	slog.Info(fmt.Sprintf("starting go struct explorer at http://localhost:%d%s on %v", port, rootPath, s.explorer.rootKeys()))
 	serveMux.Handle(rootPath, s)
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil); err != nil {
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), serveMux); err != nil {
 		slog.Error("[structexplorer] failed to start service", "err", err)
 	}
 }
@@ -204,6 +235,10 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 	case "clear":
 		s.explorer.removeNonRootObjects()
 		return
+	case "resume":
+		s.resume()
+		return
+
 	default:
 		slog.Warn("[structexplorer] invalid direction", "action", cmd.Action)
 		http.Error(w, "invalid action", http.StatusBadRequest)
