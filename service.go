@@ -1,6 +1,7 @@
 package structexplorer
 
 import (
+	"context"
 	_ "embed"
 	"encoding/json"
 	"fmt"
@@ -17,6 +18,9 @@ type Service interface {
 	http.Handler
 	// Start accepts 0 or 1 Options
 	Start(opts ...Options)
+
+	// Break accepts 0 or 1 Options
+	Break(opts ...Options)
 
 	// Dump writes an HTML file for displaying the current state of the explorer and its entries.
 	Dump()
@@ -71,16 +75,16 @@ func (s *service) Break(opts ...Options) {
 		Handler: serveMux,
 	}
 	s.httpServer = server
-	if err := server.ListenAndServe(); err != nil {
-		slog.Error("[structexplorer] failed to start service", "err", err)
-	}
+	open(fmt.Sprintf("http://localhost:%d", port))
+	// this blocks until server is closed by resume operation.
+	server.ListenAndServe()
 }
 
 func (s *service) resume() {
 	if s.httpServer == nil {
 		return
 	}
-	s.httpServer.Close()
+	s.httpServer.Shutdown(context.Background())
 	s.httpServer = nil
 }
 
