@@ -49,6 +49,14 @@ Note: if the list contains just one structural value then selecting it can be sk
 
 ## explore while debugging
 
+### Break
+
+The following instruction will start the explorer on a struct, opens a Browser and provides a `resume` button to stop the explorer and resume the Go-routine that started it.
+
+    structexplorer.Break("myStruct", myStruct)
+
+### Dump
+
 Currently, the standard Go debugger `delve` stops all goroutines while in a debugging session.
 This means that if you have started the `structexplorer` service in your program, it will not respond to any HTTP requests during that session.
 
