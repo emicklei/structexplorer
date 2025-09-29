@@ -72,3 +72,6 @@ Another method is to use a special test case which starts an explorer at the end
 ## examples
 
 See folder `examples` for simple programs demonstrating each feature.
+
+
+&copy; 2025. https://ernestmicklei.com. MIT License

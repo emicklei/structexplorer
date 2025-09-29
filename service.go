@@ -58,7 +58,7 @@ func NewService(labelValuePairs ...any) Service {
 	return s
 }
 
-// Break will listen and serve on the default endpoint and open a window.
+// Break will listen and serve on the default endpoint and opens a window.
 // The explorer page will have a button "Resume" that stops the server
 // and unblocks the go-routine that started it.
 func Break(keyvaluePairs ...any) {

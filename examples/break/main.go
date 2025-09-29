@@ -2,17 +2,19 @@ package main
 
 import (
 	"log"
-	"testing"
 
 	"github.com/emicklei/structexplorer"
 )
 
-func TestWithBreak(t *testing.T) {
-	target := struct{ Field string }{Field: "hello"}
+// go run .
+func main() {
+	greeting := map[string]any{}
+	hello := struct{ Field string }{Field: "hello"}
+	greeting["hi"] = hello
 
 	log.Println("before opening the explorer to see state")
 
-	structexplorer.Break("debugging", target)
+	structexplorer.Break("map", greeting)
 
 	log.Println("after opening the explorer to see state")
 }

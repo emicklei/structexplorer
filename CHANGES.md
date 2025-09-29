@@ -1,3 +1,7 @@
+### v0.9.0
+
+ - adds Break(key,value,...) for temporary runtime inspection. 
+
 ### v0.8.1
 
  - Explore replaces object with same root label.
