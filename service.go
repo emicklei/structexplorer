@@ -62,7 +62,9 @@ func NewService(labelValuePairs ...any) Service {
 // The explorer page will have a button "Resume" that stops the server
 // and unblocks the go-routine that started it.
 func Break(keyvaluePairs ...any) {
-	NewService(keyvaluePairs...).Break()
+	NewService(keyvaluePairs...).Break(Options{
+		ServeMux: new(http.ServeMux),
+	})
 }
 
 // Break will listen and serve on the given http port and path.
