@@ -15,4 +15,8 @@ func TestWithBreak(t *testing.T) {
 	structexplorer.Break("debugging", target)
 
 	log.Println("after opening the explorer to see state")
+
+	target.Field = "world"
+
+	structexplorer.Break("debugging", target)
 }
