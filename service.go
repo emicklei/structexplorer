@@ -1,6 +1,7 @@
 package structexplorer
 
 import (
+	"context"
 	_ "embed"
 	"encoding/json"
 	"fmt"
@@ -18,8 +19,11 @@ type Service interface {
 	// Start accepts 0 or 1 Options
 	Start(opts ...Options)
 
+	// Break accepts 0 or 1 Options
+	Break(opts ...Options)
+
 	// Dump writes an HTML file for displaying the current state of the explorer and its entries.
-	Dump()
+	Dump(optionFilename ...string)
 
 	// Explore adds or replaces (matching on label) a new entry for a value unless it cannot be explored.
 	// The object will be placed on the next available column on row 1.
@@ -44,6 +48,7 @@ func (s *service) init() {
 type service struct {
 	explorer      *explorer
 	indexTemplate *template.Template
+	httpServer    *http.Server
 }
 
 // NewService creates a new to explore one or more values (structures).
@@ -51,6 +56,45 @@ func NewService(labelValuePairs ...any) Service {
 	s := &service{explorer: newExplorerOnAll(labelValuePairs...)}
 	s.init()
 	return s
+}
+
+// Break will listen and serve on the default endpoint and opens a window.
+// The explorer page will have a button "Resume" that stops the server
+// and unblocks the go-routine that started it.
+func Break(keyvaluePairs ...any) {
+	NewService(keyvaluePairs...).Break(Options{
+		ServeMux: new(http.ServeMux),
+	})
+}
+
+// Break will listen and serve on the given http port and path.
+// it accepts 0 or 1 Options to override defaults.
+// The opened explorer page will have a button "Resume" that stops the server
+// and unblocks the go-routine that started it.
+func (s *service) Break(opts ...Options) {
+	if len(opts) > 0 {
+		s.explorer.options = &opts[0]
+	}
+	port := s.explorer.options.httpPort()
+	serveMux := s.explorer.options.serveMux()
+	rootPath := s.explorer.options.rootPath()
+	serveMux.Handle(rootPath, s)
+	server := &http.Server{
+		Addr:    fmt.Sprintf(":%d", port),
+		Handler: serveMux,
+	}
+	s.httpServer = server
+	open(fmt.Sprintf("http://localhost:%d", port))
+	// this blocks until server is closed by resume operation.
+	server.ListenAndServe()
+}
+
+func (s *service) resume() {
+	if s.httpServer == nil {
+		return
+	}
+	s.httpServer.Shutdown(context.Background())
+	s.httpServer = nil
 }
 
 // Start will listen and serve on the given http port and path.
@@ -64,7 +108,7 @@ func (s *service) Start(opts ...Options) {
 	rootPath := s.explorer.options.rootPath()
 	slog.Info(fmt.Sprintf("starting go struct explorer at http://localhost:%d%s on %v", port, rootPath, s.explorer.rootKeys()))
 	serveMux.Handle(rootPath, s)
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil); err != nil {
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), serveMux); err != nil {
 		slog.Error("[structexplorer] failed to start service", "err", err)
 	}
 }
@@ -98,7 +142,11 @@ func (s *service) serveIndex(w http.ResponseWriter, _ *http.Request) {
 	defer s.protect()()
 
 	w.Header().Set("content-type", "text/html")
-	if err := s.indexTemplate.Execute(w, s.explorer.buildIndexData(newIndexDataBuilder())); err != nil {
+
+	builder := newIndexDataBuilder()
+	builder.isBreaking = s.httpServer != nil
+
+	if err := s.indexTemplate.Execute(w, s.explorer.buildIndexData(builder)); err != nil {
 		slog.Error("failed to execute template", "err", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -142,10 +190,14 @@ func (s *service) Explore(label string, value any, options ...ExploreOption) Ser
 }
 
 // Dump writes an HTML file for displaying the current state of the explorer and its entries.
-func (s *service) Dump() {
+func (s *service) Dump(optionalFilename ...string) {
 	defer s.protect()()
 
-	out, err := os.Create("structexplorer.html")
+	fName := "structexplorer.html"
+	if len(optionalFilename) > 0 && optionalFilename[0] != "" {
+		fName = optionalFilename[0]
+	}
+	out, err := os.Create(fName)
 	if err != nil {
 		slog.Error("failed to create dump file", "err", err)
 	}
@@ -204,6 +256,10 @@ func (s *service) serveInstructions(w http.ResponseWriter, r *http.Request) {
 	case "clear":
 		s.explorer.removeNonRootObjects()
 		return
+	case "resume":
+		s.resume()
+		return
+
 	default:
 		slog.Warn("[structexplorer] invalid direction", "action", cmd.Action)
 		http.Error(w, "invalid action", http.StatusBadRequest)

@@ -32,17 +32,17 @@ type explorer struct {
 }
 
 func (e *explorer) nextFreeColumn(row int) int {
-	max := 0
 	cols, ok := e.accessMap[row]
 	if !ok {
 		return 0
 	}
+	max := -1
 	for col := range cols {
 		if col > max {
 			max = col
 		}
 	}
-	return max
+	return max + 1
 }
 
 func (e *explorer) nextFreeRow(column int) int {
@@ -54,7 +54,13 @@ func (e *explorer) nextFreeRow(column int) int {
 			return row
 		}
 	}
-	return 0
+	max := -1
+	for row := range e.accessMap {
+		if row > max {
+			max = row
+		}
+	}
+	return max + 1
 }
 
 func (e *explorer) rootKeys() (list []string) {
@@ -164,6 +170,9 @@ func (e *explorer) putObjectStartingAt(row, col int, access objectAccess, option
 }
 
 func (e *explorer) buildIndexData(b *indexDataBuilder) indexData {
+	// was it starting using Break?
+	b.data.IsBreaking = b.isBreaking
+
 	for row, each := range e.accessMap {
 		for col, access := range each {
 			info := b.build(row, col, access)

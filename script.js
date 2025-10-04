@@ -13,8 +13,18 @@ function explore(row, column, selectNode, action) {
         action: action,
         selections: getSelectValues(selectNode)
     }));
-    xhr.onload = function () { window.location.reload(); }
+    xhr.onload = function() { window.location.reload(); }
 }
+
+function resume() {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", window.location.href);
+    xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8")
+    xhr.send(JSON.stringify({
+        action: "resume" 
+    }));
+}
+
 // Return an array of the selected option values in the control.
 // Select is an HTML select element.
 function getSelectValues(select) {
@@ -34,4 +44,4 @@ function getSelectValues(select) {
         result.push(opt.value || opt.text);
     }
     return result;
-}
+} 

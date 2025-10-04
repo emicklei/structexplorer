@@ -5,6 +5,27 @@ import (
 	"time"
 )
 
+func TestExplorerFreeColumn(t *testing.T) {
+	x := newExplorerOnAll()
+	r := x.nextFreeRow(0)
+	if got, want := r, 0; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+	c := x.nextFreeColumn(0)
+	if got, want := c, 0; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+	x.putObjectStartingAt(1, 1, objectAccess{}, Row(0))
+	r = x.nextFreeRow(0)
+	if got, want := r, 1; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+	c = x.nextFreeColumn(1)
+	if got, want := c, 2; got != want {
+		t.Errorf("got [%[1]v:%[1]T] want [%[2]v:%[2]T]", got, want)
+	}
+}
+
 func TestExplorer(t *testing.T) {
 	x := newExplorerOnAll("indexData", indexData{})
 	d := x.buildIndexData(newIndexDataBuilder())
@@ -57,7 +78,7 @@ func TestExplorerTable(t *testing.T) {
 	if o2.object != o3.object {
 		t.Fail()
 	}
-	if got, want := x.nextFreeColumn(1), 1; got != want {
+	if got, want := x.nextFreeColumn(1), 2; got != want {
 		t.Errorf("got [%v]:%T want [%v]:%T", got, got, want, want)
 	}
 	if !x.canRemoveObjectAt(1, 1) {
