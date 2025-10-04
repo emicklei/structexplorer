@@ -20,7 +20,7 @@ func RowColumn(row, column int) ExploreOption {
 func Column(column int) ExploreOption {
 	return ExploreOption{
 		placement: func(e *explorer) (newRow, newColumn int) {
-			return e.nextFreeRow(column) + 1, column
+			return e.nextFreeRow(column), column
 		},
 	}
 }
@@ -29,7 +29,7 @@ func Column(column int) ExploreOption {
 func Row(row int) ExploreOption {
 	return ExploreOption{
 		placement: func(e *explorer) (newRow, newColumn int) {
-			return row, e.nextFreeColumn(row) + 1
+			return row, e.nextFreeColumn(row)
 		},
 	}
 }
