@@ -23,7 +23,7 @@ type Service interface {
 	Break(opts ...Options)
 
 	// Dump writes an HTML file for displaying the current state of the explorer and its entries.
-	Dump()
+	Dump(optionFilename ...string)
 
 	// Explore adds or replaces (matching on label) a new entry for a value unless it cannot be explored.
 	// The object will be placed on the next available column on row 1.
@@ -190,10 +190,14 @@ func (s *service) Explore(label string, value any, options ...ExploreOption) Ser
 }
 
 // Dump writes an HTML file for displaying the current state of the explorer and its entries.
-func (s *service) Dump() {
+func (s *service) Dump(optionalFilename ...string) {
 	defer s.protect()()
 
-	out, err := os.Create("structexplorer.html")
+	fName := "structexplorer.html"
+	if len(optionalFilename) > 0 && optionalFilename[0] != "" {
+		fName = optionalFilename[0]
+	}
+	out, err := os.Create(fName)
 	if err != nil {
 		slog.Error("failed to create dump file", "err", err)
 	}
