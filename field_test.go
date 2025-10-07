@@ -55,43 +55,58 @@ type object struct {
 	pa *[2]bool
 }
 
-func TestFieldValue(t *testing.T) {
+func TestFieldAccess_value(t *testing.T) {
 	var i int = 24
-	o := object{
-		i: i, pi: &i, I: i, PI: &i, sl: []string{"a"}, m: map[string]int{"a": 1},
+	var pi *int = &i
+	oSet := object{
+		i:  i,
+		pi: pi,
+		I:  i,
+		PI: pi,
+		sl: []string{"a"},
+		m:  map[string]int{"a": 1},
 		pa: &[2]bool{true, false},
 	}
-	t.Log((&fieldAccess{owner: o, key: "sl"}).value())
-	t.Log((&fieldAccess{owner: &o, key: "i"}).value())
-	t.Log((&fieldAccess{owner: o, key: "pi"}).value())
-	t.Log((&fieldAccess{owner: &o, key: "I"}).value())
-	t.Log((&fieldAccess{owner: &o, key: "PI"}).value())
-	t.Log((&fieldAccess{owner: o, key: "null"}).value())
-	t.Log((&fieldAccess{owner: o, key: "m"}).value())
-	t.Log((&fieldAccess{owner: o, key: "pa"}).value())
+	oUnset := object{}
+
+	testCases := []struct {
+		name    string
+		owner   any
+		key     string
+		want    any
+		wanterr bool
+	}{
+		{"set slice", oSet, "sl", []string{"a"}, false},
+		{"set private int", &oSet, "i", 24, false}, // unsafe access works
+		{"set private *int", oSet, "pi", &i, false},
+		{"set public int", &oSet, "I", 24, false},
+		{"set public *int", &oSet, "PI", &i, false},
+		{"set map", oSet, "m", map[string]int{"a": 1}, false},
+		{"set *array", oSet, "pa", &[2]bool{true, false}, false},
+		{"non-existent field", oSet, "null", nil, true},
+
+		{"unset slice", oUnset, "sl", []string(nil), false},
+		{"unset private int", &oUnset, "i", 0, false},
+		{"unset private *int", oUnset, "pi", (*int)(nil), false},
+		{"unset public int", &oUnset, "I", 0, false},
+		{"unset public *int", &oUnset, "PI", (*int)(nil), false},
+		{"unset map", oUnset, "m", map[string]int(nil), false},
+		{"unset *array", oUnset, "pa", (*[2]bool)(nil), false},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fa := &fieldAccess{owner: tc.owner, key: tc.key}
+			got := fa.value()
+
+			// Use DeepEqual for slices, maps, and pointers.
+			if !reflect.DeepEqual(got, tc.want) {
+				t.Errorf("got value: %v (%T), want: %v (%T)", got, got, tc.want, tc.want)
+			}
+		})
+	}
 }
 
-func TestFieldValueUnset(t *testing.T) {
-	o := object{}
-	t.Log((&fieldAccess{owner: o, key: "sl"}).value())
-	t.Log((&fieldAccess{owner: &o, key: "i"}).value())
-	t.Log((&fieldAccess{owner: o, key: "pi"}).value())
-	t.Log((&fieldAccess{owner: &o, key: "I"}).value())
-	t.Log((&fieldAccess{owner: &o, key: "PI"}).value())
-	t.Log((&fieldAccess{owner: o, key: "null"}).value())
-	t.Log((&fieldAccess{owner: o, key: "m"}).value())
-	t.Log((&fieldAccess{owner: o, key: "pa"}).value())
-}
-
-func TestFieldMapAccess(t *testing.T) {
-	f := fieldAccess{owner: map[string]int{"a": 1}, key: "a"}
-	t.Log(f.value())
-}
-func TestFieldMapAccessPointer(t *testing.T) {
-	var a int = 1
-	f := fieldAccess{owner: map[string]*int{"a": &a}, key: "a"}
-	t.Log(f.value())
-}
 
 func TestFieldMapWithReflects(t *testing.T) {
 	m := map[reflect.Value]reflect.Value{}
@@ -166,11 +181,6 @@ func TestNewFields(t *testing.T) {
 	}
 }
 
-func TestFieldSlice(t *testing.T) {
-	s := []int{1, 2}
-	t.Log((&fieldAccess{owner: s, key: "0"}).value())
-	t.Log((&fieldAccess{owner: s, key: "1"}).value())
-}
 
 func TestMapWithIntKey(t *testing.T) {
 	m := map[int]bool{
@@ -181,14 +191,6 @@ func TestMapWithIntKey(t *testing.T) {
 	}
 }
 
-func TestValueAtAccessPathStruct(t *testing.T) {
-	v := valueAtAccessPath(indexData{}, []string{"Rows"})
-	t.Log(v)
-}
-func TestValueAtAccessPathSlice(t *testing.T) {
-	v := valueAtAccessPath([]int{3, 4}, []string{"1"})
-	t.Log(v)
-}
 
 func TestIntPointer(t *testing.T) {
 	i := 1
