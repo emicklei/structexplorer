@@ -124,7 +124,26 @@
             {{- if .IsBreaking }}
             <button class="btn" title="resume from a break" onclick="javascript:resume();">
                 Resume from Breakpoint
-            </button>        
+            </button>
+            <script>
+                (function() {
+                    let sent = false;
+
+                    function sendBreak() {
+                        if (sent) return;
+                        sent = true;
+                        const blob = new Blob([JSON.stringify({action: 'resume'})], {type: 'application/json'});
+                        navigator.sendBeacon(window.location.href, blob);
+                    }
+
+                    document.addEventListener('visibilitychange', () => {
+                        if (document.visibilityState === 'hidden') sendBreak();
+                    });
+
+                    window.addEventListener('beforeunload', sendBreak);
+                    window.addEventListener('pagehide', sendBreak);
+                })();
+            </script>
             {{- end }}
         </p>
 
