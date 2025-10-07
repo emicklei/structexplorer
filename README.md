@@ -51,7 +51,8 @@ Note: if the list contains just one structural value then selecting it can be sk
 
 ### Break
 
-The following instruction will start the explorer on a struct, opens a Browser and provides a `resume` button to stop the explorer and resume the Go-routine that started it.
+The following instruction will start the explorer on a struct, opens a Browser and provides a `resume` button to stop the explorer and resume the Go-routine that started it. 
+Closing the Browser or Tab will also resume the halted program.
 
     structexplorer.Break("myStruct", myStruct)
 
