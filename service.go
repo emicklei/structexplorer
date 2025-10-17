@@ -158,7 +158,7 @@ func (s *service) Explore(label string, value any, options ...ExploreOption) Ser
 	defer s.protect()()
 
 	if !canExplore(value) {
-		slog.Info("value can not be explored", "value", value)
+		slog.Debug("value can not be explored", "value", value)
 		return s
 	}
 

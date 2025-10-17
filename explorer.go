@@ -98,7 +98,7 @@ func newExplorerOnAll(labelValuePairs ...any) *explorer {
 		}
 		value := labelValuePairs[i+1]
 		if !canExplore(value) {
-			slog.Info("value can not be explored", "value", value)
+			slog.Debug("value can not be explored", "value", value)
 			continue
 		}
 		s.putObjectStartingAt(row, 0, objectAccess{
