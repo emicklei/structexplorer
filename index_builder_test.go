@@ -18,6 +18,31 @@ func TestRebuildShrinkingSlice(t *testing.T) {
 	}
 }
 
+type panickingStringer struct{}
+
+func (p panickingStringer) String() string {
+	panic("test panic")
+}
+
+func TestPanicRecovery(t *testing.T) {
+	// This test ensures that the safeComputeValueString function
+	// correctly recovers from a panic in a String() method.
+	data := struct {
+		BadField panickingStringer
+	}{
+		BadField: panickingStringer{},
+	}
+	oa := objectAccess{
+		object: data,
+		path:   []string{""},
+	}
+	b := newIndexDataBuilder()
+
+	// This call should not panic because the panic is recovered inside build.
+	// The test passes if it completes without crashing.
+	b.build(0, 0, oa)
+}
+
 func TestRebuildShrinkingSliceWithInterval(t *testing.T) {
 	elements := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 	oa := objectAccess{
