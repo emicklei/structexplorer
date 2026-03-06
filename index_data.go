@@ -33,6 +33,7 @@ type (
 		Access     string
 		Fields     []fieldEntry
 		SelectSize int
+		Multiple   string
 		SelectID   string
 		NotLive    bool
 	}

@@ -90,12 +90,21 @@ func (b *indexDataBuilder) build(row, column int, access objectAccess) cellInfo 
 		IsRoot:     access.isRoot,
 		HasZeros:   hasZeros,
 		SelectSize: len(entries),
+		Multiple:   multiple(len(entries)),
 		SelectID:   newSelectID,
 		NotLive:    b.notLive,
 	}
 	b.selectID = newSelectID
 	b.seq++
 	return cellInfo{entriesCount: len(entries), hasZeros: hasZeros}
+}
+
+// due to change in Chrome, when need to leave out the attribute is size <= 1
+func multiple(size int) string {
+	if size > 1 {
+		return "multiple"
+	}
+	return ""
 }
 
 func safeComputeValueString(fa fieldAccess) string {
